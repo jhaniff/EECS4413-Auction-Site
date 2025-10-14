@@ -2,10 +2,16 @@ package com.eecs4413.auction_platform.service;
 
 import com.eecs4413.auction_platform.dto.*;
 import com.eecs4413.auction_platform.model.Auction;
+import com.eecs4413.auction_platform.model.Bid;
 import com.eecs4413.auction_platform.model.Item;
+import com.eecs4413.auction_platform.model.User;
 import com.eecs4413.auction_platform.repository.AuctionRepository;
+import com.eecs4413.auction_platform.repository.BidRepository;
+import com.eecs4413.auction_platform.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -17,10 +23,16 @@ import java.util.Optional;
 public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final ItemService itemService;
+    private final UserRepository userRepository;
+    private final BidRepository bidRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public AuctionService(AuctionRepository auctionRepository, ItemService itemService){
+    public AuctionService(AuctionRepository auctionRepository, ItemService itemService, UserRepository userRepository, BidRepository bidRepository, SimpMessagingTemplate messagingTemplate){
         this.auctionRepository = auctionRepository;
         this.itemService = itemService;
+        this.userRepository = userRepository;
+        this.bidRepository = bidRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     public Page<AuctionDTO> searchAuctionsByItemKeyword(String query, Pageable pageable) {
@@ -36,19 +48,84 @@ public class AuctionService {
     }
 
     public AuctionDetailDTO getAuctionDetails(Long auctionId) {
-        Optional<Auction> optionalAuction = auctionRepository.findById(auctionId);
-        if(optionalAuction.isPresent()){
-            Auction auction = optionalAuction.get();
-            return convertToAuctionDetailDTO(auction);
+        Auction auction = auctionRepository.findById(auctionId).orElseThrow(
+                () -> new IllegalArgumentException("Auction not found")
+        );
+         return convertToAuctionDetailDTO(auction);
+    }
+
+    @Transactional
+    public BidResponseDTO placeBid(BidRequestDTO bidRequestDTO) {
+        try{
+            Auction auction = auctionRepository.findById(bidRequestDTO.getAuctionId())
+                    .orElseThrow(() -> new IllegalArgumentException("Auction not found"));
+            // Validate auction state
+            OffsetDateTime now = OffsetDateTime.now();
+            if (auction.getEndsAt().isBefore(now)) {
+                throw new IllegalStateException("Auction has already ended");
+            }
+            // Validate bid amount
+            if (bidRequestDTO.getAmount() <= auction.getCurrentPrice()) {
+                throw new IllegalArgumentException("Bid must be higher than current price");
+            }
+            // Find bidder
+            User bidder = userRepository.findById(bidRequestDTO.getBidderId())
+                    .orElseThrow(() -> new IllegalArgumentException("Bidder not found"));
+            // Save bid
+            Bid bid = Bid.builder()
+                    .auction(auction)
+                    .bidder(bidder)
+                    .amount(bidRequestDTO.getAmount())
+                    .placedAt(now)
+                    .build();
+
+            bidRepository.save(bid);
+
+            auction.setCurrentPrice(bidRequestDTO.getAmount());
+            auction.setHighestBidder(bidder);
+            auctionRepository.save(auction);
+
+            BidResponseDTO response = BidResponseDTO.builder()
+                    .auctionId(auction.getAuctionId())
+                    .newHighestBid(auction.getCurrentPrice())
+                    .highestBidderId(bidder.getUserId())
+                    .highestBidderName(bidder.getFirstName() + " " + bidder.getLastName())
+                    .updatedAt(now)
+                    .message("Bid placed successfully")
+                    .build();
+
+            messagingTemplate.convertAndSend("/topic/auction/" + auction.getAuctionId(), response);
+
+            return response;
+        }catch(Exception e){
+            return BidResponseDTO.builder()
+                    .message("Bid can't be placed: " + e.getMessage())
+                    .build();
         }
-        // Throw custom exception later.
-        return null;
     }
 
-    public BidResponseDTO handleBidRequest(BidRequestDTO bid) {
-        return null;
-    }
+    @Transactional
+    public void endAuction(Auction auction) {
+        if (!"ONGOING".equals(auction.getStatus())) {
+            return;
+        }
 
+        auction.setStatus("ENDED");
+        auctionRepository.save(auction);
+
+        AuctionResultDTO auctionResultDTO = AuctionResultDTO.builder()
+                .auctionId(auction.getAuctionId())
+                .itemName(auction.getItem().getName())
+                .winnerName(auction.getHighestBidder() != null
+                        ? auction.getHighestBidder().getFirstName() + " " + auction.getHighestBidder().getLastName()
+                        : "No Bids Were Placed")
+                .winningBid(auction.getCurrentPrice())
+                .status("ENDED")
+                .finalizedAt(OffsetDateTime.now())
+                .build();
+
+        messagingTemplate.convertAndSend("/topic/auction/" + auction.getAuctionId(), auctionResultDTO);
+    }
 
     private AuctionDetailDTO convertToAuctionDetailDTO(Auction auction){
         return AuctionDetailDTO.builder()

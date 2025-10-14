@@ -14,5 +14,5 @@ public class AuctionResultDTO {
     private Long winnerId;
     private String winnerName;
     private OffsetDateTime finalizedAt;
-    private boolean isPaid;  // for UC4
+    private String status;
 }

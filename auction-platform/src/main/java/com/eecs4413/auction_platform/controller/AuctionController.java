@@ -43,8 +43,8 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.getAuctionDetails(auctionId));
     }
     @PostMapping("/bid")
-    public ResponseEntity<BidResponseDTO> placeBid(@RequestBody BidRequestDTO bid){
-        return ResponseEntity.ok(auctionService.handleBidRequest(bid));
+    public ResponseEntity<BidResponseDTO> submitBid(@RequestBody BidRequestDTO bid){
+        return ResponseEntity.ok(auctionService.placeBid(bid));
     }
 
 }
