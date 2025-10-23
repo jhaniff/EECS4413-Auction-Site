@@ -169,6 +169,12 @@ public class AuctionService {
         return String.format("%dh %02dm", hours, minutes);
     }
 
-
+     private void winningRule(AuctionResultDTO details){
+          String auctionStatus = details.getStatus();
+          if (auctionStatus.equals("ENDED")){
+               int winningBid = details.getWinningBid();
+               String winnerName = details.getWinnerName();
+          }
+     }
 
 }
