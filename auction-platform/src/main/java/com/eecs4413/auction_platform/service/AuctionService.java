@@ -175,6 +175,15 @@ public class AuctionService {
 
           if (auctionStatus.equals("ENDED")){
                List<Bid> allBids = auction.getBids();
+               for (Bid bids : allBids) {
+                    int highestBid = allBids.get(0).getAmount();
+                    int currentBid = bids.getAmount();
+                    if (currentBid > highestBid) {
+                         highestBid = currentBid;
+                         break;
+                    }
+
+               }
           }
      }
 }
