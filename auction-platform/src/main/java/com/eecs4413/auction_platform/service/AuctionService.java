@@ -168,14 +168,13 @@ public class AuctionService {
         long minutes = remaining.toMinutesPart();
         return String.format("%dh %02dm", hours, minutes);
     }
-
-     private void winningRule(Long auctionID){
+     @Transactional
+     private void getWinner(Long auctionID){
           Auction auction = auctionRepository.findById(auctionID).orElseThrow();
           String auctionStatus = auction.getStatus();
+
           if (auctionStatus.equals("ENDED")){
-               int winningBid = details.getWinningBid();
-               String winnerName = details.getWinnerName();
+               List<Bid> allBids = auction.getBids();
           }
      }
-
 }
