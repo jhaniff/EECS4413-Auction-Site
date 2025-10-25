@@ -25,6 +25,6 @@ public class PaymentRequestDTO {
      private String postalCode;
      private Long cardNumber;
      private String nameOnCard;
-     private Date expiryDate;
+     private OffsetDateTime expiryDate;
      private Long securityCode;
 }
