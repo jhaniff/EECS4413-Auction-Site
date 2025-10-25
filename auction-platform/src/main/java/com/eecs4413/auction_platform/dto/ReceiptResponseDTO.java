@@ -12,5 +12,16 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 
 public class ReceiptResponseDTO {
+     private String firstName;
+     private String lastName;
+     private String streetName;
+     private String streetNumber;
+     private String city;
+     private String country;
+     private String postalCode;
+     private Float totalPaid;
+     private Long ItemID;
+     private OffsetDateTime shippingDate;
+     private String message;
 
 }
