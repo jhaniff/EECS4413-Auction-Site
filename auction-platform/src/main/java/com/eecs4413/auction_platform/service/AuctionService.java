@@ -200,7 +200,7 @@ public class AuctionService {
               // Validate auction state
               OffsetDateTime now = OffsetDateTime.now();
               if (auction.getEndsAt().isAfter(now)) {
-                   throw new IllegalStateException("Auction has already ended");
+                   throw new IllegalStateException("Auction is ongoing!\nYou can't place a payment yet.  ");
               }
               PaymentResponseDTO paymentResponse = PaymentResponseDTO.builder()
                       //.paymentID(auction.getPaymentID())
