@@ -34,8 +34,8 @@ public class Payment {
      private User payee;
 
      @Column(nullable = false)
-     private OffsetDateTime paymentDate = OffsetDateTime.now();
+     private OffsetDateTime paymentDate;
 
      @Column(nullable = false)
-     private OffsetDateTime expectedDeliveryDate = OffsetDateTime.now().plusDays(7);
+     private OffsetDateTime expectedDeliveryDate;
 }
