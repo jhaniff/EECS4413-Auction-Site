@@ -34,5 +34,8 @@ public class Payment {
      private User payee;
 
      @Column(nullable = false)
+     private OffsetDateTime paymentMade = OffsetDateTime.now();
+
+     @Column(nullable = false)
      private OffsetDateTime expectedDeliveryDate;
 }
