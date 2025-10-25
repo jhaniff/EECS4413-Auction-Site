@@ -16,6 +16,6 @@ public class PaymentResponseDTO {
      private Long paymentID;
      private String firstName;
      private String lastName;
-     private Date deliveryDate;
+     private OffsetDateTime deliveryDate;
      private String message; // e.g. "Payment successful.  "
 }
