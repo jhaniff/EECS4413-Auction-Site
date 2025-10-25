@@ -4,6 +4,7 @@ import com.eecs4413.auction_platform.dto.*;
 import com.eecs4413.auction_platform.model.*;
 import com.eecs4413.auction_platform.repository.AuctionRepository;
 import com.eecs4413.auction_platform.repository.BidRepository;
+import com.eecs4413.auction_platform.repository.PaymentRepository;
 import com.eecs4413.auction_platform.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -21,14 +22,16 @@ public class AuctionService {
     private final ItemService itemService;
     private final UserRepository userRepository;
     private final BidRepository bidRepository;
+    private final PaymentRepository paymentRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public AuctionService(AuctionRepository auctionRepository, ItemService itemService, UserRepository userRepository, BidRepository bidRepository, SimpMessagingTemplate messagingTemplate){
+    public AuctionService(AuctionRepository auctionRepository, ItemService itemService, UserRepository userRepository, BidRepository bidRepository, PaymentRepository paymentRepository, SimpMessagingTemplate messagingTemplate){
         this.auctionRepository = auctionRepository;
         this.itemService = itemService;
         this.userRepository = userRepository;
         this.bidRepository = bidRepository;
-        this.messagingTemplate = messagingTemplate;
+         this.paymentRepository = paymentRepository;
+         this.messagingTemplate = messagingTemplate;
     }
 
     public Page<AuctionDTO> searchAuctionsByItemKeyword(String query, Pageable pageable) {
