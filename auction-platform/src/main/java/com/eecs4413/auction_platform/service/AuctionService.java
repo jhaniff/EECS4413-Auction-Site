@@ -1,10 +1,7 @@
 package com.eecs4413.auction_platform.service;
 
 import com.eecs4413.auction_platform.dto.*;
-import com.eecs4413.auction_platform.model.Auction;
-import com.eecs4413.auction_platform.model.Bid;
-import com.eecs4413.auction_platform.model.Item;
-import com.eecs4413.auction_platform.model.User;
+import com.eecs4413.auction_platform.model.*;
 import com.eecs4413.auction_platform.repository.AuctionRepository;
 import com.eecs4413.auction_platform.repository.BidRepository;
 import com.eecs4413.auction_platform.repository.UserRepository;
@@ -207,13 +204,21 @@ public class AuctionService {
                       .orElseThrow(() -> new IllegalArgumentException("Payee not found"));
 
               // Save Payment
+               Payment payment = Payment.builder()
+                       .paymentID(paymentRequestDTO.getPaymentID())
+                       .auction(auction)
+                       .payee(payee)
+                       .paymentDate(OffsetDateTime.now())
+                       .expectedDeliveryDate(OffsetDateTime.now().plusDays(7))
+                       .build();
 
+              paymentRepository.save(payment);
 
               PaymentResponseDTO paymentResponse = PaymentResponseDTO.builder()
-                      .paymentID(paymentRequestDTO.getPaymentID())
+                      .paymentID(payment.getPaymentID())
                       .firstName(payee.getFirstName())
                       .lastName(payee.getLastName())
-                      .deliveryDate()
+                      .deliveryDate(payment.getExpectedDeliveryDate())
                       .message("Payment placed successfully.  ")
                       .build();
               return paymentResponse;
