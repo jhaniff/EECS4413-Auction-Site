@@ -20,7 +20,7 @@ public class ReceiptResponseDTO {
      private String country;
      private String postalCode;
      private BigDecimal totalPaid;
-     private Long ItemID;
+     private Long itemID;
      private OffsetDateTime shippingDate;
      private String message;
 
