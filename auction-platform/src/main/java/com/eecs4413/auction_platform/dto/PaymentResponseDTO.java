@@ -13,6 +13,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 public class PaymentResponseDTO {
      private Long paymentID;
+     private Long userID;
      private String firstName;
      private String lastName;
      private OffsetDateTime deliveryDate;
