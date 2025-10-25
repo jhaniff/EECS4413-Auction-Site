@@ -214,7 +214,7 @@ public class AuctionService {
                        .paymentDate(OffsetDateTime.now())
                        .expectedDeliveryDate(OffsetDateTime.now().plusDays(7))
                        .build();
-
+               createReceipt(payment);
               paymentRepository.save(payment);
 
               PaymentResponseDTO paymentResponseDTO =  PaymentResponseDTO.builder()
