@@ -212,7 +212,7 @@ public class AuctionService {
               return paymentResponse;
          }catch(Exception e) {
               return PaymentResponseDTO.builder()
-                      .message("Bid can't be placed: " + e.getMessage())
+                      .message("Payment can't be placed: " + e.getMessage())
                       .build();
          }
     }
