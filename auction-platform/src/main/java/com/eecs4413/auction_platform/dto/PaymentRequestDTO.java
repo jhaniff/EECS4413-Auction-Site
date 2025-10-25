@@ -1,5 +1,6 @@
 package com.eecs4413.auction_platform.dto;
 
+import com.eecs4413.auction_platform.model.User;
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.OffsetDateTime;
-import java.util.Date;
 
 @Data
 @Builder
@@ -16,6 +16,7 @@ import java.util.Date;
 public class PaymentRequestDTO {
      private Long auctionID;
      private Long paymentID;
+     private User user;
      private String firstName;
      private String lastName;
      private String streetName;
