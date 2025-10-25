@@ -199,7 +199,7 @@ public class AuctionService {
                       .orElseThrow(() -> new IllegalArgumentException("Auction not found"));
               // Validate auction state
               OffsetDateTime now = OffsetDateTime.now();
-              if (auction.getEndsAt().isBefore(now)) {
+              if (auction.getEndsAt().isAfter(now)) {
                    throw new IllegalStateException("Auction has already ended");
               }
               PaymentResponseDTO paymentResponse = PaymentResponseDTO.builder()
