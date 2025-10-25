@@ -19,7 +19,7 @@ public class ReceiptResponseDTO {
      private String city;
      private String country;
      private String postalCode;
-     private Float totalPaid;
+     private BigDecimal totalPaid;
      private Long ItemID;
      private OffsetDateTime shippingDate;
      private String message;
