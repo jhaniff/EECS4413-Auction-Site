@@ -14,6 +14,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentRequestDTO {
+     private Long auctionID;
      private Long paymentID;
      private String firstName;
      private String lastName;
