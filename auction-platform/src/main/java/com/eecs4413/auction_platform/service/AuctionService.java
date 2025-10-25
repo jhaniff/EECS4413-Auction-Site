@@ -203,7 +203,7 @@ public class AuctionService {
                    throw new IllegalStateException("Auction is ongoing!\nYou can't place a payment yet.  ");
               }
               // Find payee
-              User payee = userRepository.findById(paymentRequestDTO.getPaymentID())
+              User payee = userRepository.findById(paymentRequestDTO.getUserID())
                       .orElseThrow(() -> new IllegalArgumentException("Payee not found"));
 
               // Save Payment
