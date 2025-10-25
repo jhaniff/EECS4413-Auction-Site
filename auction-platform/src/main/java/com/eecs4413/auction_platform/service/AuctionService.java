@@ -217,13 +217,16 @@ public class AuctionService {
 
               paymentRepository.save(payment);
 
-              return PaymentResponseDTO.builder()
+              PaymentResponseDTO paymentResponseDTO =  PaymentResponseDTO.builder()
                       .paymentID(payment.getPaymentID())
                       .firstName(payee.getFirstName())
                       .lastName(payee.getLastName())
                       .deliveryDate(payment.getExpectedDeliveryDate())
                       .message("Payment placed successfully.  ")
                       .build();
+              messagingTemplate.convertAndSend("/topic/auction/" + auction.getAuctionId(), paymentResponseDTO);
+              return paymentResponseDTO;
+
          }catch(Exception e) {
               return PaymentResponseDTO.builder()
                       .message("Payment can't be placed: " + e.getMessage())
