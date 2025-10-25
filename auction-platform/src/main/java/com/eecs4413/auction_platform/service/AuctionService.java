@@ -169,6 +169,7 @@ public class AuctionService {
     }
      @Transactional
      private void getWinner(Long auctionID){
+
           Auction auction = auctionRepository.findById(auctionID).orElseThrow();
           String auctionStatus = auction.getStatus();
 
@@ -191,4 +192,29 @@ public class AuctionService {
                }
           }
      }
+     @Transactional
+     private PaymentResponseDTO placePayment(PaymentRequestDTO paymentRequestDTO){
+         try{
+              Auction auction = auctionRepository.findById(paymentRequestDTO.getAuctionID())
+                      .orElseThrow(() -> new IllegalArgumentException("Auction not found"));
+              // Validate auction state
+              OffsetDateTime now = OffsetDateTime.now();
+              if (auction.getEndsAt().isBefore(now)) {
+                   throw new IllegalStateException("Auction has already ended");
+              }
+              PaymentResponseDTO paymentResponse = PaymentResponseDTO.builder()
+                      //.paymentID(auction.getPaymentID())
+                      //.getFirstName(payee.getUserId())
+                      //.getLastName(payee.getUserId())
+                      //.getDeliveryDate(now)
+                      .message("Payment placed successfully.  ")
+                      .build();
+              return paymentResponse;
+         }catch(Exception e) {
+              return PaymentResponseDTO.builder()
+                      .message("Bid can't be placed: " + e.getMessage())
+                      .build();
+         }
+    }
+
 }
