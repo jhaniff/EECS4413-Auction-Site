@@ -25,7 +25,7 @@ public class Payment {
      @EqualsAndHashCode.Exclude
      @ManyToOne
      @JoinColumn(name = "auction_id", nullable = false)
-     private Auction auctionID;
+     private Auction auction;
 
      @ToString.Exclude
      @EqualsAndHashCode.Exclude
