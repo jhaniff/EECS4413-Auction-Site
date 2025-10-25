@@ -23,8 +23,8 @@ public class PaymentRequestDTO {
      private String city;
      private String country;
      private String postalCode;
-     private Long cardNumber;
+     private String cardNumber;
      private String nameOnCard;
      private OffsetDateTime expiryDate;
-     private Long securityCode;
+     private String securityCode;
 }
