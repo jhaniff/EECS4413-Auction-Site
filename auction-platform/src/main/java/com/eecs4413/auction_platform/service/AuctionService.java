@@ -193,7 +193,7 @@ public class AuctionService {
           }
      }
      @Transactional
-     private PaymentResponseDTO placePayment(PaymentRequestDTO paymentRequestDTO){
+     public PaymentResponseDTO placePayment(PaymentRequestDTO paymentRequestDTO){
          try{
               Auction auction = auctionRepository.findById(paymentRequestDTO.getAuctionID())
                       .orElseThrow(() -> new IllegalArgumentException("Auction not found"));
