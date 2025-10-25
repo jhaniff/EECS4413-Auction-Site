@@ -206,11 +206,14 @@ public class AuctionService {
               User payee = userRepository.findById(paymentRequestDTO.getPaymentID())
                       .orElseThrow(() -> new IllegalArgumentException("Payee not found"));
 
+              // Save Payment
+
+
               PaymentResponseDTO paymentResponse = PaymentResponseDTO.builder()
-                      //.paymentID(auction.getPaymentID())
-                      //.getFirstName(payee.getUserId())
-                      //.getLastName(payee.getUserId())
-                      //.getDeliveryDate(now)
+                      .paymentID(paymentRequestDTO.getPaymentID())
+                      .firstName(payee.getFirstName())
+                      .lastName(payee.getLastName())
+                      .deliveryDate()
                       .message("Payment placed successfully.  ")
                       .build();
               return paymentResponse;
