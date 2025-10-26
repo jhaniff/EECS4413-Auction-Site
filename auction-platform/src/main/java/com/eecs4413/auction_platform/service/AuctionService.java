@@ -233,5 +233,30 @@ public class AuctionService {
                       .build();
          }
     }
+    public ReceiptResponseDTO createReceipt(Payment payment){
+
+         try {
+              ReceiptResponseDTO receiptResponse = ReceiptResponseDTO.builder()
+                      .firstName(payment.getPayee().getFirstName())
+                      .lastName(payment.getPayee().getLastName())
+                      .streetName(payment.getPayee().getAddress().getStreetName())
+                      .streetNumber(payment.getPayee().getAddress().getStreetNumber())
+                      .city(payment.getPayee().getAddress().getCity())
+                      .country(payment.getPayee().getAddress().getCountry())
+                      .postalCode(payment.getPayee().getAddress().getPostalCode())
+                      .totalPaid(payment.getAuction().getItem().getExpeditedCost()) //Placeholder.  Not sure about total cost.
+                      .itemID(payment.getAuction().getItem().getItemId())
+                      .shippingDate(payment.getExpectedDeliveryDate())
+                      .message("Receipt generated.  ")
+                      .build();
+              messagingTemplate.convertAndSend("/topic/auction/" + payment.getAuction().getAuctionId(), receiptResponse);
+              return receiptResponse;
+
+         } catch (Exception e) {
+              return ReceiptResponseDTO.builder()
+                      .message("Receipt can't be generated: " + e.getMessage())
+                      .build();
+         }
+    }
 
 }
