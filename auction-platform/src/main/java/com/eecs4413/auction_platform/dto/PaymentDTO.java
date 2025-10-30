@@ -7,8 +7,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.OffsetDateTime;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -17,7 +15,4 @@ public class PaymentDTO {
      private Long paymentID;
      private Auction auction;
      private User payee;
-     private OffsetDateTime paymentDate;
-     private OffsetDateTime expectedDeliveryDate;
-
 }
