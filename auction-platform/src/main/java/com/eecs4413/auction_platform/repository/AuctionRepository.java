@@ -16,7 +16,7 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
 
     @Query("""
     SELECT a FROM Auction a
-    WHERE a.item.itemId IN :itemIds
+    WHERE a.item.itemId IN :itemIds AND a.status = 'ONGOING'
     """)
     Page<Auction> findByItemIds(@Param("itemIds") List<Long> itemIds, Pageable pageable);
 
