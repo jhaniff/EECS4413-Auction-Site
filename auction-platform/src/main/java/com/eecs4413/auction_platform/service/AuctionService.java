@@ -1,6 +1,9 @@
 package com.eecs4413.auction_platform.service;
 
 import com.eecs4413.auction_platform.dto.*;
+import com.eecs4413.auction_platform.exception.DatabaseOperationException;
+import com.eecs4413.auction_platform.exception.InvalidBidException;
+import com.eecs4413.auction_platform.exception.ResourceNotFoundException;
 import com.eecs4413.auction_platform.model.Auction;
 import com.eecs4413.auction_platform.model.Bid;
 import com.eecs4413.auction_platform.model.Item;
@@ -9,6 +12,7 @@ import com.eecs4413.auction_platform.repository.AuctionRepository;
 import com.eecs4413.auction_platform.repository.BidRepository;
 import com.eecs4413.auction_platform.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -49,7 +53,7 @@ public class AuctionService {
 
     public AuctionDetailDTO getAuctionDetails(Long auctionId) {
         Auction auction = auctionRepository.findById(auctionId).orElseThrow(
-                () -> new IllegalArgumentException("Auction not found")
+                () -> new ResourceNotFoundException("Auction not found for Id: " + auctionId)
         );
          return convertToAuctionDetailDTO(auction);
     }
@@ -58,19 +62,19 @@ public class AuctionService {
     public BidResponseDTO placeBid(BidRequestDTO bidRequestDTO) {
         try{
             Auction auction = auctionRepository.findById(bidRequestDTO.getAuctionId())
-                    .orElseThrow(() -> new IllegalArgumentException("Auction not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Auction not found for Id: " + bidRequestDTO.getAuctionId()));
             // Validate auction state
             OffsetDateTime now = OffsetDateTime.now();
             if (auction.getEndsAt().isBefore(now)) {
-                throw new IllegalStateException("Auction has already ended");
+                throw new InvalidBidException("Auction has already ended");
             }
             // Validate bid amount
             if (bidRequestDTO.getAmount() <= auction.getCurrentPrice()) {
-                throw new IllegalArgumentException("Bid must be higher than current price");
+                throw new InvalidBidException("Bid must be higher than current price: " + auction.getCurrentPrice());
             }
             // Find bidder
             User bidder = userRepository.findById(bidRequestDTO.getBidderId())
-                    .orElseThrow(() -> new IllegalArgumentException("Bidder not found"));
+                    .orElseThrow(() -> new InvalidBidException("Bidder not found of Id: " + bidRequestDTO.getBidderId()));
             // Save bid
             Bid bid = Bid.builder()
                     .auction(auction)
@@ -97,10 +101,8 @@ public class AuctionService {
             messagingTemplate.convertAndSend("/topic/auction/" + auction.getAuctionId(), response);
 
             return response;
-        }catch(Exception e){
-            return BidResponseDTO.builder()
-                    .message("Bid can't be placed: " + e.getMessage())
-                    .build();
+        } catch (DataIntegrityViolationException e) {
+            throw new DatabaseOperationException("Failed to save bid due to data constraint violation", e);
         }
     }
 

@@ -5,6 +5,7 @@ import com.eecs4413.auction_platform.dto.AuctionDetailDTO;
 import com.eecs4413.auction_platform.dto.BidRequestDTO;
 import com.eecs4413.auction_platform.dto.BidResponseDTO;
 import com.eecs4413.auction_platform.service.AuctionService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -43,7 +44,7 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.getAuctionDetails(auctionId));
     }
     @PostMapping("/bid")
-    public ResponseEntity<BidResponseDTO> submitBid(@RequestBody BidRequestDTO bid){
+    public ResponseEntity<BidResponseDTO> submitBid(@Valid @RequestBody BidRequestDTO bid){
         return ResponseEntity.ok(auctionService.placeBid(bid));
     }
 
