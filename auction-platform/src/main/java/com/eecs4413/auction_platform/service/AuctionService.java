@@ -224,7 +224,6 @@ public class AuctionService {
                       .deliveryDate(payment.getExpectedDeliveryDate())
                       .message("Payment placed successfully.  ")
                       .build();
-              messagingTemplate.convertAndSend("/topic/auction/" + auction.getAuctionId(), paymentResponseDTO);
               return paymentResponseDTO;
 
          }catch(Exception e) {
@@ -249,7 +248,6 @@ public class AuctionService {
                       .shippingDate(payment.getExpectedDeliveryDate())
                       .message("Receipt generated.  ")
                       .build();
-              messagingTemplate.convertAndSend("/topic/auction/" + payment.getAuction().getAuctionId(), receiptResponse);
               return receiptResponse;
 
          } catch (Exception e) {
