@@ -12,16 +12,21 @@ import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
 
 public class PaymentService {
+     PaymentRepository paymentRepository;
      AuctionRepository auctionRepository;
      UserRepository userRepository;
-     PaymentRepository paymentRepository;
+
+     public PaymentService(AuctionRepository auctionRepository, UserRepository userRepository, PaymentRepository paymentRepository ){
+          this.auctionRepository = auctionRepository;
+          this.userRepository = userRepository;
+     }
+
      public PaymentDetailDTO getPaymentDetails(Long paymentID) {
           Payment payment = paymentRepository.findById(paymentID).orElseThrow(
                   () -> new IllegalArgumentException("Payment not found")
           );
           return convertToPaymentDetailDTO(payment);
      }
-
      private PaymentDetailDTO convertToPaymentDetailDTO(Payment payment){
           return PaymentDetailDTO.builder()
                   .paymentID(payment.getPaymentID())
