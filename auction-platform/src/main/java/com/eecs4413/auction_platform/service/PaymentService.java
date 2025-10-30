@@ -9,6 +9,7 @@ import com.eecs4413.auction_platform.repository.PaymentRepository;
 import com.eecs4413.auction_platform.repository.UserRepository;
 import jakarta.transaction.Transactional;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 public class PaymentService {
@@ -87,7 +88,7 @@ public class PaymentService {
                        .city(payment.getPayee().getAddress().getCity())
                        .country(payment.getPayee().getAddress().getCountry())
                        .postalCode(payment.getPayee().getAddress().getPostalCode())
-                       .totalPaid(payment.getAuction().getItem().getExpeditedCost()) //Placeholder.  Not sure about total cost.
+                       .totalPaid(BigDecimal.valueOf(payment.getPayee().getBids().getLast().getAmount()).add(payment.getAuction().getItem().getBaseShipCost()))
                        .itemID(payment.getAuction().getItem().getItemId())
                        .shippingDate(payment.getExpectedDeliveryDate())
                        .message("Receipt generated.  ")
