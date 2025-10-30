@@ -22,7 +22,6 @@ public class AuctionService {
     private final ItemService itemService;
     private final UserRepository userRepository;
     private final BidRepository bidRepository;
-    private final PaymentRepository paymentRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
     public AuctionService(AuctionRepository auctionRepository, ItemService itemService, UserRepository userRepository, BidRepository bidRepository, PaymentRepository paymentRepository, SimpMessagingTemplate messagingTemplate){
@@ -30,7 +29,6 @@ public class AuctionService {
         this.itemService = itemService;
         this.userRepository = userRepository;
         this.bidRepository = bidRepository;
-         this.paymentRepository = paymentRepository;
          this.messagingTemplate = messagingTemplate;
     }
 
