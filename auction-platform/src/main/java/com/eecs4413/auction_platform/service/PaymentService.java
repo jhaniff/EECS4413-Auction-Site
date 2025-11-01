@@ -8,6 +8,7 @@ import com.eecs4413.auction_platform.repository.AuctionRepository;
 import com.eecs4413.auction_platform.repository.PaymentRepository;
 import com.eecs4413.auction_platform.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
