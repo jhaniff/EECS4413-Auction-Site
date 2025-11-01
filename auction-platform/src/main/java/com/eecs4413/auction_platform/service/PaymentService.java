@@ -19,6 +19,7 @@ public class PaymentService {
 
      public PaymentService(AuctionRepository auctionRepository, UserRepository userRepository, PaymentRepository paymentRepository ){
           this.auctionRepository = auctionRepository;
+          this.paymentRepository = paymentRepository;
           this.userRepository = userRepository;
      }
 
