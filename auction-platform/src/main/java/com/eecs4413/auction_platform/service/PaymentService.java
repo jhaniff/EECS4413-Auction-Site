@@ -45,6 +45,8 @@ public class PaymentService {
           try{
                Auction auction = auctionRepository.findById(paymentRequestDTO.getAuctionID())
                        .orElseThrow(() -> new IllegalArgumentException("Auction not found"));
+               auction = auctionRepository.findById(auction.getAuctionId()).get();
+
                // Validate auction state
                OffsetDateTime now = OffsetDateTime.now();
                if (auction.getEndsAt().isAfter(now)) {
