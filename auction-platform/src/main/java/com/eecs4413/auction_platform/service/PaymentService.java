@@ -65,6 +65,9 @@ public class PaymentService {
                        .expectedDeliveryDate(OffsetDateTime.now().plusDays(7))
                        .build();
                createReceipt(payment);
+               if(paymentRequestDTO.getCardNumber().length() !=  16) {
+                    throw new IllegalArgumentException("Invalid credit card number.  ");
+               }
                paymentRepository.save(payment);
 
                PaymentResponseDTO paymentResponseDTO =  PaymentResponseDTO.builder()
