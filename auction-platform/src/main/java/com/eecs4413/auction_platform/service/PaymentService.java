@@ -94,6 +94,8 @@ public class PaymentService {
      public ReceiptResponseDTO createReceipt(Payment payment){
 
           try {
+               Payment storedPayment = paymentRepository.findById(payment.getPaymentID())
+                       .orElseThrow(() -> new IllegalArgumentException("Payment not found.  "));
                ReceiptResponseDTO receiptResponse = ReceiptResponseDTO.builder()
                        .firstName(payment.getPayee().getFirstName())
                        .lastName(payment.getPayee().getLastName())
