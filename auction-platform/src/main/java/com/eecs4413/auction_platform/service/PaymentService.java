@@ -68,6 +68,9 @@ public class PaymentService {
                if(paymentRequestDTO.getCardNumber().length() !=  16) {
                     throw new IllegalArgumentException("Invalid credit card number.  ");
                }
+               if(paymentRequestDTO.getExpiryDate().isBefore(OffsetDateTime.now())) {
+                    throw new IllegalArgumentException("Invalid expiry date.  ");
+               }
                paymentRepository.save(payment);
 
                PaymentResponseDTO paymentResponseDTO =  PaymentResponseDTO.builder()
