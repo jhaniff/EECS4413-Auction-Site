@@ -96,6 +96,7 @@ public class PaymentService {
           try {
                Payment storedPayment = paymentRepository.findById(payment.getPaymentID())
                        .orElseThrow(() -> new IllegalArgumentException("Payment not found.  "));
+               BigDecimal totalPaid = BigDecimal.ZERO;
                ReceiptResponseDTO receiptResponse = ReceiptResponseDTO.builder()
                        .firstName(storedPayment.getPayee().getFirstName())
                        .lastName(storedPayment.getPayee().getLastName())
