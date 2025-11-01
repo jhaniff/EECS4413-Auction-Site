@@ -1,5 +1,7 @@
 package com.eecs4413.auction_platform.controller;
 import com.eecs4413.auction_platform.dto.PaymentDetailDTO;
+import com.eecs4413.auction_platform.dto.PaymentRequestDTO;
+import com.eecs4413.auction_platform.dto.PaymentResponseDTO;
 import com.eecs4413.auction_platform.service.PaymentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,11 @@ public class PaymentController {
      @GetMapping("/{paymentId}")
      public ResponseEntity<PaymentDetailDTO> getPayment(@PathVariable Long paymentId){
           return ResponseEntity.ok(paymentService.getPaymentDetails(paymentId));
+     }
+
+     @PostMapping("/place")
+     public ResponseEntity<PaymentResponseDTO> placePayment(@RequestBody PaymentRequestDTO request){
+          return ResponseEntity.ok(paymentService.placePayment(request));
      }
 
 }
