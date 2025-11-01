@@ -71,6 +71,9 @@ public class PaymentService {
                if(paymentRequestDTO.getExpiryDate().isBefore(OffsetDateTime.now())) {
                     throw new IllegalArgumentException("Invalid expiry date.  ");
                }
+               if(paymentRequestDTO.getSecurityCode().length() !=  3) {
+                    throw new IllegalArgumentException("Invalid security code.  ");
+               }
                paymentRepository.save(payment);
 
                PaymentResponseDTO paymentResponseDTO =  PaymentResponseDTO.builder()
