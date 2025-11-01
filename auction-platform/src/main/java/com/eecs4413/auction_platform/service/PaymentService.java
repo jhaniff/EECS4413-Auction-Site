@@ -88,7 +88,7 @@ public class PaymentService {
                        .city(payment.getPayee().getAddress().getCity())
                        .country(payment.getPayee().getAddress().getCountry())
                        .postalCode(payment.getPayee().getAddress().getPostalCode())
-                       .totalPaid(BigDecimal.valueOf(payment.getPayee().getBids().getLast().getAmount()).add(payment.getAuction().getItem().getBaseShipCost()))
+                       .totalPaid(BigDecimal.valueOf(payment.getPayee().getBids().get(0).getAmount()).add(payment.getAuction().getItem().getBaseShipCost()))
                        .itemID(payment.getAuction().getItem().getItemId())
                        .shippingDate(payment.getExpectedDeliveryDate())
                        .message("Receipt generated.  ")
