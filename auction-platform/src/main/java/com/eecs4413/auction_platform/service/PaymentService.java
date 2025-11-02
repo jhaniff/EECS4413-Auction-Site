@@ -96,6 +96,15 @@ public class PaymentService {
           try {
                Payment storedPayment = paymentRepository.findDetailedById(payment.getPaymentID())
                        .orElseThrow(() -> new IllegalArgumentException("Payment not found.  "));
+               List<Bid> winningUserBids = storedPayment.getAuction().getHighestBidder().getBids();
+               int highestBidAmount = winningUserBids.get(0).getAmount();
+               for(Bid bid : winningUserBids){
+                    int currentBid = bid.getAmount();
+                    if(currentBid > highestBidAmount) {
+                         highestBidAmount = currentBid;
+                    }
+               }
+
 
                ReceiptResponseDTO receiptResponse = ReceiptResponseDTO.builder()
                        .firstName(storedPayment.getPayee().getFirstName())
