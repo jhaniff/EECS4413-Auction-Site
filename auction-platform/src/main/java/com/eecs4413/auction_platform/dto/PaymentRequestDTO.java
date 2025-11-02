@@ -27,5 +27,5 @@ public class PaymentRequestDTO {
      private String nameOnCard;
      private OffsetDateTime expiryDate;
      private String securityCode;
-     private boolean expedited;
+     private boolean isExpedited;
 }
