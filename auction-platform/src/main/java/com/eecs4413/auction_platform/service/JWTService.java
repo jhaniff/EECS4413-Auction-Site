@@ -20,11 +20,14 @@ import java.util.function.Function;
 public class JWTService {
 
     private String secretKey = "";
+    private long jwtExpiration = 86400000; // 1 day
+    private long refreshExpiration = 604800000; // 7 days
     public JWTService(){
         try {
             KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
             SecretKey sk = keyGen.generateKey();
             secretKey = Base64.getEncoder().encodeToString(sk.getEncoded());
+            System.out.println("Secret Key Generated and encoded: " + secretKey);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
@@ -32,13 +35,21 @@ public class JWTService {
 
     public String generateToken(String email) {
         Map<String, Object> claims = new HashMap<>();
+        return buildToken(claims, email,jwtExpiration);
+    }
+    public String generateRefreshToken(String email) {
+        Map<String, Object> claims = new HashMap<>();
+        return buildToken(claims, email,refreshExpiration);
+    }
+
+    private String buildToken(Map<String, Object> claims, String email, long expiration){
 
         return Jwts.builder()
                 .claims()
                 .add(claims)
                 .subject(email)
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 60 * 60 * 30))
+                .expiration(new Date(System.currentTimeMillis() + expiration))
                 .and()
                 .signWith(getKey())
                 .compact();
@@ -66,9 +77,9 @@ public class JWTService {
                 .getPayload();
     }
 
-    public boolean validateToken(String token, UserDetails userDetails) {
+    public boolean validateToken(String token,String email) {
         final String userName = extractUserName(token);
-        return (userName.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        return (userName.equals(email) && !isTokenExpired(token));
     }
 
     private boolean isTokenExpired(String token){
