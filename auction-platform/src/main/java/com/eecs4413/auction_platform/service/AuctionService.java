@@ -165,29 +165,4 @@ public class AuctionService {
         long minutes = remaining.toMinutesPart();
         return String.format("%dh %02dm", hours, minutes);
     }
-     @Transactional
-     private void getWinner(Long auctionID){
-
-          Auction auction = auctionRepository.findById(auctionID).orElseThrow();
-          String auctionStatus = auction.getStatus();
-
-          if (auctionStatus.equals("ENDED")){
-               List<Bid> allBids = auction.getBids();
-               int highestBid = allBids.get(0).getAmount();
-               for (Bid bids : allBids) {
-                    int currentBid = bids.getAmount();
-                    if (currentBid > highestBid) {
-                         highestBid = currentBid;
-                    }
-               }
-               for (Bid bids : allBids) {
-                    if (bids.getAmount() == highestBid ) {
-                         User winningUser = bids.getBidder();
-                         auction.setHighestBidder(winningUser);
-                         auctionRepository.save(auction);
-                         break;
-                    }
-               }
-          }
-     }
 }
