@@ -2,6 +2,8 @@ package com.eecs4413.auction_platform.controller;
 import com.eecs4413.auction_platform.dto.PaymentDetailDTO;
 import com.eecs4413.auction_platform.dto.PaymentRequestDTO;
 import com.eecs4413.auction_platform.dto.PaymentResponseDTO;
+import com.eecs4413.auction_platform.dto.ReceiptResponseDTO;
+import com.eecs4413.auction_platform.model.Payment;
 import com.eecs4413.auction_platform.service.PaymentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
