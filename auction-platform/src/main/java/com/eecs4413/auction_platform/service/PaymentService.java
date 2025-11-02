@@ -2,6 +2,7 @@ package com.eecs4413.auction_platform.service;
 
 import com.eecs4413.auction_platform.dto.*;
 import com.eecs4413.auction_platform.model.Auction;
+import com.eecs4413.auction_platform.model.Bid;
 import com.eecs4413.auction_platform.model.Payment;
 import com.eecs4413.auction_platform.model.User;
 import com.eecs4413.auction_platform.repository.AuctionRepository;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Service
 public class PaymentService {
