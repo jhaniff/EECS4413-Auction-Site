@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS item_keywords CASCADE;
 DROP TABLE IF EXISTS keywords CASCADE;
 DROP TABLE IF EXISTS items CASCADE;
 DROP TABLE IF EXISTS auth_password_resets CASCADE;
+DROP TABLE IF EXISTS tokens CASCADE;
 DROP TABLE IF EXISTS user_addresses CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
@@ -29,6 +30,13 @@ CREATE TABLE users (
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
   is_active        BOOLEAN     NOT NULL DEFAULT TRUE
 );
+CREATE TABLE tokens (
+    id BIGSERIAL PRIMARY KEY,
+    token VARCHAR(255) NOT NULL,
+    revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    expired BOOLEAN NOT NULL DEFAULT FALSE,
+    user_id BIGINT NOT NULL REFERENCES users(user_id)
+);
 
 CREATE TABLE user_addresses (
   user_id       BIGINT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
@@ -39,12 +47,16 @@ CREATE TABLE user_addresses (
   postal_code   TEXT NOT NULL
 );
 
-CREATE TABLE auth_password_resets (
-  token         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-  expires_at    TIMESTAMPTZ NOT NULL,
-  used_at       TIMESTAMPTZ,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+create table auth_password_resets (
+  id               uuid primary key default gen_random_uuid(),
+  user_id          bigint not null references users(user_id) on delete cascade,
+  code_hash        text not null,
+  expires_at       timestamptz not null,
+  used_at          timestamptz,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  status           text not null default 'ACTIVE',
+  attempts         smallint not null default 0,
+  max_attempts     smallint not null default 5
 );
 
 -- === ITEM CATALOGUE ===

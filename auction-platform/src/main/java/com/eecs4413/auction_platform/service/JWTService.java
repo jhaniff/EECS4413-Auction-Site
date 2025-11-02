@@ -1,9 +1,12 @@
 package com.eecs4413.auction_platform.service;
 
+import com.eecs4413.auction_platform.repository.TokenRepository;
+import com.eecs4413.auction_platform.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -21,13 +24,17 @@ public class JWTService {
 
     private String secretKey = "";
     private long jwtExpiration = 86400000; // 1 day
-    private long refreshExpiration = 604800000; // 7 days
-    public JWTService(){
+
+    private final TokenRepository tokenRepository;
+    private final UserRepository userRepository;
+
+    public JWTService(TokenRepository tokenRepository, UserRepository userRepository){
+        this.tokenRepository = tokenRepository;
+        this.userRepository = userRepository;
         try {
             KeyGenerator keyGen = KeyGenerator.getInstance("HmacSHA256");
             SecretKey sk = keyGen.generateKey();
             secretKey = Base64.getEncoder().encodeToString(sk.getEncoded());
-            System.out.println("Secret Key Generated and encoded: " + secretKey);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
@@ -36,10 +43,6 @@ public class JWTService {
     public String generateToken(String email) {
         Map<String, Object> claims = new HashMap<>();
         return buildToken(claims, email,jwtExpiration);
-    }
-    public String generateRefreshToken(String email) {
-        Map<String, Object> claims = new HashMap<>();
-        return buildToken(claims, email,refreshExpiration);
     }
 
     private String buildToken(Map<String, Object> claims, String email, long expiration){
@@ -88,5 +91,11 @@ public class JWTService {
 
     private Date extractExpiration(String token){
         return extractClaim(token, Claims::getExpiration);
+    }
+
+    public boolean isTokenValid(String token){
+        return tokenRepository.findByToken(token)
+                .map(t -> !t.isExpired() && !t.isRevoked())
+                .orElse(false);
     }
 }

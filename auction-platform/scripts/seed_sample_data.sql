@@ -10,6 +10,7 @@ TRUNCATE TABLE
   item_keywords,
   keywords,
   items,
+  tokens,
   auth_password_resets,
   user_addresses,
   users
@@ -28,11 +29,6 @@ VALUES
   ((SELECT user_id FROM users WHERE email = 'bob.bidder@example.com'),      'King St W',    '250', 'Toronto',  'Canada', 'M5V1J2'),
   ((SELECT user_id FROM users WHERE email = 'charlie.collector@example.com'),'Bank St',     '88',  'Ottawa',   'Canada', 'K1P5N5'),
   ((SELECT user_id FROM users WHERE email = 'dana.dealer@example.com'),     'Saint Paul',   '432', 'Montreal', 'Canada', 'H3C1M8');
-
-INSERT INTO auth_password_resets (user_id, expires_at, used_at)
-SELECT user_id, now() + INTERVAL '3 hours', NULL
-FROM users
-WHERE email = 'bob.bidder@example.com';
 
 INSERT INTO items (seller_id, name, description, type, shipping_days, base_ship_cost, expedited_cost, is_sold)
 VALUES

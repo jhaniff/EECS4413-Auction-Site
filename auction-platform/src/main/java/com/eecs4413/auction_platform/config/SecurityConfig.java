@@ -18,6 +18,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.time.Clock;
+
 @Configuration
 public class SecurityConfig {
     @Autowired
@@ -36,7 +38,7 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("register", "login")
+                        .requestMatchers("/register/**", "/login/**", "/forgot/reset/**", "/forgot/**")
                         .permitAll()
                         .anyRequest().authenticated()
                 )
@@ -56,5 +58,10 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public Clock clock(){
+        return Clock.systemUTC();
     }
 }

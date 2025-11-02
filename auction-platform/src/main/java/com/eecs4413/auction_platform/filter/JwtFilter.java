@@ -1,8 +1,12 @@
 package com.eecs4413.auction_platform.filter;
 
 
+import com.eecs4413.auction_platform.model.User;
+import com.eecs4413.auction_platform.repository.TokenRepository;
+import com.eecs4413.auction_platform.repository.UserRepository;
 import com.eecs4413.auction_platform.service.AuctionUserDetailsService;
 import com.eecs4413.auction_platform.service.JWTService;
+import com.eecs4413.auction_platform.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,6 +31,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JWTService jwtService;
 
+
     @Autowired
     ApplicationContext context;
 
@@ -36,13 +41,19 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = null;
         String username = null;
 
+        // check auth header and if the jwt token was sent with request of Bearer Auth
         if(authHeader != null && authHeader.startsWith("Bearer ")){
             token = authHeader.substring(7);
             username = jwtService.extractUserName(token);
         }
+        // Checks if the username is not available and if the user has been authenticated before if so we can skip to next filter
         if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
+
+            // getting userdetails from the Userdetails implemented class
             UserDetails userDetails = context.getBean(AuctionUserDetailsService.class).loadUserByUsername(username);
-            if(jwtService.validateToken(token, userDetails.getUsername())){
+            // Validating token with content and database.
+            if(jwtService.validateToken(token, userDetails.getUsername()) && jwtService.isTokenValid(token)){
+                // Setting user as authenticated.
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

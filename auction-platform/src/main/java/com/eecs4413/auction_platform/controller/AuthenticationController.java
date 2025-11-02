@@ -1,27 +1,24 @@
 package com.eecs4413.auction_platform.controller;
 
-import com.eecs4413.auction_platform.dto.AuthenticationResponseDTO;
-import com.eecs4413.auction_platform.dto.RegisterDTO;
-import com.eecs4413.auction_platform.dto.SignInDTO;
+import com.eecs4413.auction_platform.dto.*;
+import com.eecs4413.auction_platform.model.UserPrincipal;
+import com.eecs4413.auction_platform.service.PasswordResetService;
 import com.eecs4413.auction_platform.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping
 public class AuthenticationController {
 
     private UserService userService;
+    private PasswordResetService passwordResetService;
 
-    public AuthenticationController(UserService userService){
+    public AuthenticationController(UserService userService, PasswordResetService passwordResetService){
         this.userService = userService;
+        this.passwordResetService = passwordResetService;
     }
 
     @PostMapping("/register")
@@ -34,8 +31,22 @@ public class AuthenticationController {
         return ResponseEntity.ok(userService.authenticate(signInDTO));
     }
 
-    @PostMapping("/refresh-token")
-    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        userService.refreshToken(request, response);
+    @PostMapping("/forgot")
+    public ResponseEntity<Void> forgot(@RequestBody ForgotRequestDTO forgotRequestDTO, HttpServletRequest http) {
+        passwordResetService.requestForgotPassword(forgotRequestDTO.getEmail());
+        return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/forgot/reset")
+    public ResponseEntity<Void> reset(@RequestBody ResetRequestDTO resetRequestDTO) {
+        passwordResetService.resetPassword(resetRequestDTO.getUuid(), resetRequestDTO.getCode(), resetRequestDTO.getNewPassword());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/logout/")
+    public ResponseEntity<Void> logout(@AuthenticationPrincipal UserPrincipal me){
+        userService.revokeAllForUser(me.getUser().getUserId());
+        return ResponseEntity.ok().build();
+    }
+
 }
