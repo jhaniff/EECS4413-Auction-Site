@@ -11,7 +11,7 @@ import lombok.*;
 
 @Entity
 @Data
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "payments")
@@ -40,5 +40,6 @@ public class Payment {
      private OffsetDateTime expectedDeliveryDate;
 
      @Column(name = "is_expedited", nullable = false)
+
      private boolean isExpedited;
 }
