@@ -94,6 +94,7 @@ public class PaymentService {
                        .build();
           }
      }
+     @Transactional
      public ReceiptResponseDTO createReceipt(Payment payment){
 
           try {
