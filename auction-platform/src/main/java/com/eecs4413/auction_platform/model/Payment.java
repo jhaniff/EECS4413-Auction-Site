@@ -38,4 +38,7 @@ public class Payment {
 
      @Column(nullable = false)
      private OffsetDateTime expectedDeliveryDate;
+
+     @Column(name = "is_expedited", nullable = false)
+     private boolean isExpedited;
 }
