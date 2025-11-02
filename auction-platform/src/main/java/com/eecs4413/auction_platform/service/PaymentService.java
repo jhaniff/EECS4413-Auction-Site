@@ -110,6 +110,9 @@ public class PaymentService {
                BigDecimal finalBasePrice = BigDecimal.valueOf(highestBidAmount);
                BigDecimal baseShipCost = storedPayment.getAuction().getItem().getBaseShipCost();
                BigDecimal totalPrice = finalBasePrice.add(baseShipCost);
+               if(storedPayment.isExpedited()){
+                    totalPrice = totalPrice.add(storedPayment.getAuction().getItem().getExpeditedCost());
+               }
 
                ReceiptResponseDTO receiptResponse = ReceiptResponseDTO.builder()
                        .firstName(storedPayment.getPayee().getFirstName())
