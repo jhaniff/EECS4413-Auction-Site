@@ -58,16 +58,18 @@ public class PaymentService {
                User payee = userRepository.findById(paymentRequestDTO.getUser().getUserId())
                        .orElseThrow(() -> new IllegalArgumentException("Payee not found"));
 
+               OffsetDateTime expectedDelivery = paymentRequestDTO.isExpedited()
+                       ? OffsetDateTime.now().plusDays(2)
+                       : OffsetDateTime.now().plusDays(7);
                // Save Payment
                Payment payment = Payment.builder()
                        .paymentID(paymentRequestDTO.getPaymentID())
                        .auction(auction)
                        .payee(payee)
                        .paymentDate(OffsetDateTime.now())
-                       .expectedDeliveryDate(OffsetDateTime.now().plusDays(7))
+                       .expectedDeliveryDate(expectedDelivery)
                        .isExpedited(paymentRequestDTO.isExpedited())
                        .build();
-               createReceipt(payment);
                if(paymentRequestDTO.getCardNumber().length() !=  16) {
                     throw new IllegalArgumentException("Invalid credit card number.  ");
                }
@@ -78,6 +80,7 @@ public class PaymentService {
                     throw new IllegalArgumentException("Invalid security code.  ");
                }
                paymentRepository.save(payment);
+               createReceipt(payment);
 
                PaymentResponseDTO paymentResponseDTO =  PaymentResponseDTO.builder()
                        .paymentID(payment.getPaymentID())
@@ -100,19 +103,19 @@ public class PaymentService {
           try {
                Payment storedPayment = paymentRepository.findDetailedById(payment.getPaymentID())
                        .orElseThrow(() -> new IllegalArgumentException("Payment not found.  "));
-               List<Bid> winningUserBids = storedPayment.getAuction().getHighestBidder().getBids();
-               int highestBidAmount = winningUserBids.get(0).getAmount();
-               for(Bid bid : winningUserBids){
-                    int currentBid = bid.getAmount();
-                    if(currentBid > highestBidAmount) {
-                         highestBidAmount = currentBid;
+               List<Bid> allAuctionBids = storedPayment.getAuction().getBids();
+               int highestBidAmount = 0;
+               for (Bid bid : allAuctionBids) {
+                    if (bid.getBidder().getUserId().equals(storedPayment.getAuction().getHighestBidder().getUserId())) {
+                         highestBidAmount = Math.max(highestBidAmount, bid.getAmount());
                     }
                }
                BigDecimal finalBasePrice = BigDecimal.valueOf(highestBidAmount);
                BigDecimal baseShipCost = storedPayment.getAuction().getItem().getBaseShipCost();
+               BigDecimal expeditedCost = storedPayment.getAuction().getItem().getExpeditedCost();
                BigDecimal totalPrice = finalBasePrice.add(baseShipCost);
                if(storedPayment.isExpedited()){
-                    totalPrice = totalPrice.add(storedPayment.getAuction().getItem().getExpeditedCost());
+                    totalPrice = totalPrice.add(expeditedCost);
                }
 
                ReceiptResponseDTO receiptResponse = ReceiptResponseDTO.builder()
