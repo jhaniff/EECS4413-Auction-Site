@@ -65,6 +65,7 @@ public class PaymentService {
                        .payee(payee)
                        .paymentDate(OffsetDateTime.now())
                        .expectedDeliveryDate(OffsetDateTime.now().plusDays(7))
+                       .isExpedited(paymentRequestDTO.isExpedited())
                        .build();
                createReceipt(payment);
                if(paymentRequestDTO.getCardNumber().length() !=  16) {
