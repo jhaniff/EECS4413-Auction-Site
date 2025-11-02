@@ -105,7 +105,7 @@ public class PaymentService {
                        .city(storedPayment.getPayee().getAddress().getCity())
                        .country(storedPayment.getPayee().getAddress().getCountry())
                        .postalCode(storedPayment.getPayee().getAddress().getPostalCode())
-                       .totalPaid(BigDecimal.valueOf(storedPayment.getPayee().getBids().getLast().getAmount()).add(storedPayment.getAuction().getItem().getBaseShipCost()))
+                       .totalPaid(BigDecimal.valueOf(storedPayment.getPayee().getBids().get(0).getAmount()).add(storedPayment.getAuction().getItem().getBaseShipCost()))
                        .itemID(storedPayment.getAuction().getItem().getItemId())
                        .shippingDate(storedPayment.getExpectedDeliveryDate())
                        .message("Receipt generated.  ")
