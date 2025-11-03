@@ -5,6 +5,7 @@ import com.eecs4413.auction_platform.model.UserPrincipal;
 import com.eecs4413.auction_platform.service.PasswordResetService;
 import com.eecs4413.auction_platform.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -22,23 +23,23 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponseDTO> register(@RequestBody RegisterDTO registerDTO){
+    public ResponseEntity<AuthenticationResponseDTO> register(@Valid @RequestBody RegisterDTO registerDTO){
         return ResponseEntity.ok(userService.registerUser(registerDTO));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponseDTO> login(@RequestBody SignInDTO signInDTO){
+    public ResponseEntity<AuthenticationResponseDTO> login(@Valid @RequestBody SignInDTO signInDTO){
         return ResponseEntity.ok(userService.authenticate(signInDTO));
     }
 
     @PostMapping("/forgot")
-    public ResponseEntity<Void> forgot(@RequestBody ForgotRequestDTO forgotRequestDTO, HttpServletRequest http) {
+    public ResponseEntity<Void> forgot(@Valid @RequestBody ForgotRequestDTO forgotRequestDTO, HttpServletRequest http) {
         passwordResetService.requestForgotPassword(forgotRequestDTO.getEmail());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/forgot/reset")
-    public ResponseEntity<Void> reset(@RequestBody ResetRequestDTO resetRequestDTO) {
+    public ResponseEntity<Void> reset(@Valid @RequestBody ResetRequestDTO resetRequestDTO) {
         passwordResetService.resetPassword(resetRequestDTO.getUuid(), resetRequestDTO.getCode(), resetRequestDTO.getNewPassword());
         return ResponseEntity.ok().build();
     }

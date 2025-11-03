@@ -1,15 +1,13 @@
 package com.eecs4413.auction_platform.service;
 
 import com.eecs4413.auction_platform.dto.*;
+import com.eecs4413.auction_platform.model.*;
 import com.eecs4413.auction_platform.exception.DatabaseOperationException;
 import com.eecs4413.auction_platform.exception.InvalidBidException;
 import com.eecs4413.auction_platform.exception.ResourceNotFoundException;
-import com.eecs4413.auction_platform.model.Auction;
-import com.eecs4413.auction_platform.model.Bid;
-import com.eecs4413.auction_platform.model.Item;
-import com.eecs4413.auction_platform.model.User;
 import com.eecs4413.auction_platform.repository.AuctionRepository;
 import com.eecs4413.auction_platform.repository.BidRepository;
+import com.eecs4413.auction_platform.repository.PaymentRepository;
 import com.eecs4413.auction_platform.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -170,7 +168,4 @@ public class AuctionService {
         long minutes = remaining.toMinutesPart();
         return String.format("%dh %02dm", hours, minutes);
     }
-
-
-
 }
