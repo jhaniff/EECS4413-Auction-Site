@@ -207,3 +207,13 @@ The Auction Platform demonstrates how a distributed, layered, and pattern-driven
 These steps give a reliable path from a fresh download to exercising secured endpoints end-to-end.
 
 ---
+## 🔍 Automated Tests
+
+- **How to run**: execute `./mvnw.cmd clean test` from `auction-platform/` to rebuild the backend and run all unit tests.
+- **AuctionServiceTest** (`src/test/java/com/eecs4413/auction_platform/service/AuctionServiceTest.java`): covers auction search filters, detail lookups, and that a winning bid updates prices and emits WebSocket payloads.
+- **PaymentServiceTest** (`src/test/java/com/eecs4413/auction_platform/service/PaymentServiceTest.java`): validates payment summaries, enforces price calculations, and checks guarded failure paths for invalid receipts.
+- **UserServiceTest** (`src/test/java/com/eecs4413/auction_platform/service/UserServiceTest.java`): exercises registration, duplicate email rejection, login token issuance, and logout token revocation workflows.
+- **PasswordResetServiceTest** (`src/test/java/com/eecs4413/auction_platform/service/PasswordResetServiceTest.java`): verifies forgot-password requests, reset token lifecycle, and password updates with attempt limits.
+- **Troubleshooting**: if a context load fails due to schema drift, reapply `scripts/create_schema.sql` and `scripts/seed_sample_data.sql` so Hibernate’s validation aligns with the expected columns (e.g., `payments.paymentid`).
+
+---

@@ -2,9 +2,7 @@
 BEGIN;
 
 TRUNCATE TABLE
-  shipments,
   payments,
-  auction_winner,
   bids,
   auctions,
   item_keywords,
@@ -166,65 +164,19 @@ UPDATE items
 SET is_sold = TRUE
 WHERE name = 'Retro Console';
 
--- Record winner and payment for the completed auction.
-INSERT INTO auction_winner (auction_id, winner_id, winning_bid, finalized_at)
-SELECT auction_id, highest_bidder, current_price, now() - INTERVAL '7 hours'
-FROM auctions
-WHERE item_id = (SELECT item_id FROM items WHERE name = 'Retro Console');
-
 INSERT INTO payments (
   auction_id,
-  payer_id,
-  item_id,
-  subtotal_item,
-  shipping_cost,
-  expedited,
-  tax_amount,
-  total_amount,
-  card_brand,
-  card_last4,
-  status,
-  created_at,
-  approved_at)
+  payee_id,
+  payment_date,
+  expected_delivery_date,
+  is_expedited)
 SELECT
   a.auction_id,
   a.highest_bidder,
-  a.item_id,
-  a.current_price::NUMERIC(10,2),
-  18.50,
-  TRUE,
-  54.73,
-  (a.current_price::NUMERIC(10,2) + 18.50 + 54.73),
-  'VISA',
-  '4242',
-  'APPROVED',
   now() - INTERVAL '6 hours',
-  now() - INTERVAL '5 hours'
+  now() + INTERVAL '5 days',
+  TRUE
 FROM auctions a
 WHERE a.item_id = (SELECT item_id FROM items WHERE name = 'Retro Console');
-
-INSERT INTO shipments (
-  payment_id,
-  ship_to_name,
-  ship_to_addr1,
-  ship_to_city,
-  ship_to_country,
-  ship_to_postal,
-  carrier,
-  tracking_no,
-  estimated_days,
-  created_at)
-SELECT
-  p.payment_id,
-  'Charlie Chen',
-  '88 Bank St',
-  'Ottawa',
-  'Canada',
-  'K1P5N5',
-  'Canada Post',
-  'CP123456789CA',
-  7,
-  now() - INTERVAL '4 hours'
-FROM payments p;
 
 COMMIT;
