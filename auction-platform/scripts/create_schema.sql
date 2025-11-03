@@ -6,15 +6,14 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 BEGIN;
 
 -- Drop tables in dependency order for idempotent reruns.
-DROP TABLE IF EXISTS shipments CASCADE;
 DROP TABLE IF EXISTS payments CASCADE;
-DROP TABLE IF EXISTS auction_winner CASCADE;
 DROP TABLE IF EXISTS bids CASCADE;
 DROP TABLE IF EXISTS auctions CASCADE;
 DROP TABLE IF EXISTS item_keywords CASCADE;
 DROP TABLE IF EXISTS keywords CASCADE;
 DROP TABLE IF EXISTS items CASCADE;
 DROP TABLE IF EXISTS auth_password_resets CASCADE;
+DROP TABLE IF EXISTS tokens CASCADE;
 DROP TABLE IF EXISTS user_addresses CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
@@ -29,6 +28,13 @@ CREATE TABLE users (
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
   is_active        BOOLEAN     NOT NULL DEFAULT TRUE
 );
+CREATE TABLE tokens (
+    id BIGSERIAL PRIMARY KEY,
+    token VARCHAR(255) NOT NULL,
+    revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    expired BOOLEAN NOT NULL DEFAULT FALSE,
+    user_id BIGINT NOT NULL REFERENCES users(user_id)
+);
 
 CREATE TABLE user_addresses (
   user_id       BIGINT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
@@ -39,12 +45,16 @@ CREATE TABLE user_addresses (
   postal_code   TEXT NOT NULL
 );
 
-CREATE TABLE auth_password_resets (
-  token         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id       BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-  expires_at    TIMESTAMPTZ NOT NULL,
-  used_at       TIMESTAMPTZ,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+create table auth_password_resets (
+  id               uuid primary key default gen_random_uuid(),
+  user_id          bigint not null references users(user_id) on delete cascade,
+  code_hash        text not null,
+  expires_at       timestamptz not null,
+  used_at          timestamptz,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  status           text not null default 'ACTIVE',
+  attempts         smallint not null default 0,
+  max_attempts     smallint not null default 5
 );
 
 -- === ITEM CATALOGUE ===
@@ -99,47 +109,18 @@ CREATE TABLE bids (
 
 CREATE INDEX idx_bids_auction_time ON bids (auction_id, placed_at DESC);
 
-CREATE TABLE auction_winner (
-  auction_id   BIGINT PRIMARY KEY REFERENCES auctions(auction_id) ON DELETE CASCADE,
-  winner_id    BIGINT NOT NULL REFERENCES users(user_id) ON DELETE RESTRICT,
-  winning_bid  INTEGER NOT NULL,
-  finalized_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
 -- === PAYMENTS ===
 CREATE TABLE payments (
-  payment_id      BIGSERIAL PRIMARY KEY,
-  auction_id      BIGINT UNIQUE NOT NULL REFERENCES auctions(auction_id) ON DELETE RESTRICT,
-  payer_id        BIGINT NOT NULL REFERENCES users(user_id) ON DELETE RESTRICT,
-  item_id         BIGINT NOT NULL REFERENCES items(item_id) ON DELETE RESTRICT,
-  subtotal_item   NUMERIC(10,2) NOT NULL,
-  shipping_cost   NUMERIC(10,2) NOT NULL,
-  expedited       BOOLEAN NOT NULL DEFAULT FALSE,
-  tax_amount      NUMERIC(10,2) NOT NULL,
-  total_amount    NUMERIC(10,2) NOT NULL,
-  card_brand      TEXT,
-  card_last4      TEXT,
-  status          TEXT NOT NULL CHECK (status IN ('PENDING','APPROVED','DECLINED')) DEFAULT 'PENDING',
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-  approved_at     TIMESTAMPTZ
+  paymentid               BIGSERIAL PRIMARY KEY,
+  auction_id              BIGINT NOT NULL REFERENCES auctions(auction_id) ON DELETE RESTRICT,
+  payee_id                BIGINT NOT NULL REFERENCES users(user_id) ON DELETE RESTRICT,
+  payment_date            TIMESTAMPTZ NOT NULL DEFAULT now(),
+  expected_delivery_date  TIMESTAMPTZ NOT NULL,
+  is_expedited            BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE INDEX idx_payments_payer ON payments (payer_id, status);
-
--- === SHIPMENTS ===
-CREATE TABLE shipments (
-  shipment_id     BIGSERIAL PRIMARY KEY,
-  payment_id      BIGINT UNIQUE NOT NULL REFERENCES payments(payment_id) ON DELETE CASCADE,
-  ship_to_name    TEXT NOT NULL,
-  ship_to_addr1   TEXT NOT NULL,
-  ship_to_city    TEXT NOT NULL,
-  ship_to_country TEXT NOT NULL,
-  ship_to_postal  TEXT NOT NULL,
-  carrier         TEXT,
-  tracking_no     TEXT,
-  estimated_days  INTEGER NOT NULL CHECK (estimated_days >= 0),
-  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+CREATE INDEX idx_payments_auction ON payments (auction_id);
+CREATE INDEX idx_payments_payee ON payments (payee_id);
 
 -- Trigger to enforce strictly increasing bids.
 DROP TRIGGER IF EXISTS trg_increasing_bid ON bids;
