@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auction")
+@RequestMapping("/payment")
 public class PaymentController {
      private final PaymentService paymentService;
 
@@ -26,7 +26,7 @@ public class PaymentController {
      public ResponseEntity<PaymentResponseDTO> placePayment(@RequestBody PaymentRequestDTO request){
           return ResponseEntity.ok(paymentService.placePayment(request));
      }
-     @PostMapping("/receipt")
+     @PostMapping("/receipt/{paymentId}")
      public ResponseEntity<ReceiptResponseDTO> createReceipt(@RequestBody Payment payment){
           return ResponseEntity.ok(paymentService.createReceipt(payment));
      }
