@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 function PaymentPage(){
     const {id} = useParams();
     function handlePayment(paymentInfo){
+        const auctionID = id;
         console.log("Card Number:", paymentInfo.cardNumber);
         console.log("Name on Card:", paymentInfo.nameOnCard);
         console.log("Expiry Date:", paymentInfo.expiryDate);
