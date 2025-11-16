@@ -56,10 +56,6 @@ function PaymentForm({onSubmitPayment}) {
                 </label>
        </p>
       <input type="submit" />
-          {<p>Your card number is: {cardNumber}.  </p>}
-          {<p>Your name on card is: {nameOnCard}.  </p>}
-          {<p>Your expiry date is: {expiryDate}.  </p>}
-          {<p>Your security code is: {securityCode}.  </p>}
     </form>
   )
 }
