@@ -1,7 +1,11 @@
 import { useState } from 'react';
 
 function PaymentForm({onSubmitPayment}) {
-    const [payment, setPayment] = useState("");
+    const [cardNumber, setCardNumber] = useState("");
+    const [nameOnCard, setNameOnCard] = useState("");
+    const [expiryDate, setExpiryDate] = useState("");
+    const [securityCode, setSecurityCode] = useState("");
+
     const paymentInfo = {
       cardNumber,
       nameOnCard,
