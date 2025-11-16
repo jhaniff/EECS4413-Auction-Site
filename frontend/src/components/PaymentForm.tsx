@@ -19,34 +19,42 @@ function PaymentForm({onSubmitPayment}) {
       }
   return (
     <form onSubmit={handleSubmit}>
-      <label>Card Number:
-        <input
-            type="number"
-            value={cardNumber}
-            onChange={handleChange}
-         />
-      </label>
-      <label>Name on Card:
-              <input
-                  type="text"
-                  value={nameOnCard}
-                  onChange={handleChange}
-               />
-            </label>
-      <label>:Expiry Date:
-              <input
-                  type="text"
-                  value={expiryDate}
-                  onChange={handleChange}
-               />
-            </label>
-      <label>Security Code:
-              <input
-                  type="number"
-                  value={securityCode}
-                  onChange={handleChange}
-               />
-            </label>
+    <p>
+          <label>Card Number:
+            <input
+                type="number"
+                value={cardNumber}
+                onChange={(e) => setCardNumber(e.target.value)}
+             />
+          </label>
+      </p>
+      <p>
+          <label>Name on Card:
+                  <input
+                      type="text"
+                      value={nameOnCard}
+                      onChange={(e) => setNameOnCard(e.target.value)}
+                   />
+                </label>
+       </p>
+       <p>
+          <label>:Expiry Date:
+                  <input
+                      type="text"
+                      value={expiryDate}
+                      onChange={(e) => setExpiryDate(e.target.value)}
+                   />
+                </label>
+       </p>
+       <p>
+          <label>Security Code:
+                  <input
+                      type="number"
+                      value={securityCode}
+                      onChange={(e) => setSecurityCode(e.target.value)}
+                   />
+                </label>
+       </p>
       <input type="submit" />
           {<p>Your card number is: {cardNumber}.  </p>}
           {<p>Your name on card is: {nameOnCard}.  </p>}
