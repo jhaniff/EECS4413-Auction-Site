@@ -2,7 +2,11 @@ function BidForm() {
   return (
     <form>
       <label>Bid Amount:
-        <input type="number" />
+        <input
+            type="number"
+            value={bid}
+            onChange={handleChange}
+         />
       </label>
       <input type="submit" />
       {bid > 0 &&
