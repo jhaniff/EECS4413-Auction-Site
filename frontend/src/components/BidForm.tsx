@@ -1,6 +1,6 @@
 function BidForm() {
   return (
-    <form>
+    <form onSubmit={handleSubmit}>
       <label>Bid Amount:
         <input
             type="number"
