@@ -13,10 +13,6 @@ function PaymentForm({onSubmitPayment}) {
       securityCode
     };
 
-      function handleChange(e) {
-        setPayment(e.target.value);
-      }
-
       function handleSubmit(e) {
         e.preventDefault();
         onSubmitPayment(paymentInfo);
