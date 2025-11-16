@@ -2,12 +2,13 @@ import PaymentForm from "../components/PaymentForm";
 import { useParams } from "react-router-dom";
 
 function PaymentPage(){
-      function handlePayment(paymentInfo){
-            console.log("Card Number:", paymentInfo.cardNumber);
-            console.log("Name on Card:", paymentInfo.nameOnCard);
-            console.log("Expiry Date:", paymentInfo.expiryDate);
-            console.log("Security Code:", paymentInfo.securityCode);
-          }
+    const {id} = useParams();
+    function handlePayment(paymentInfo){
+        console.log("Card Number:", paymentInfo.cardNumber);
+        console.log("Name on Card:", paymentInfo.nameOnCard);
+        console.log("Expiry Date:", paymentInfo.expiryDate);
+        console.log("Security Code:", paymentInfo.securityCode);
+    }
 
     return(
         <div>
