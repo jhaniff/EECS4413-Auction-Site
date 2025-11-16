@@ -1,4 +1,16 @@
-function BidForm() {
+import { useState } from 'react';
+
+function BidForm({onSubmitBid}) {
+    const [bid, setBid] = useState("");
+
+      function handleChange(e) {
+        setBid(e.target.value);
+      }
+
+      function handleSubmit(e) {
+        e.preventDefault();
+        onSubmitBid(bid);
+      }
   return (
     <form onSubmit={handleSubmit}>
       <label>Bid Amount:
