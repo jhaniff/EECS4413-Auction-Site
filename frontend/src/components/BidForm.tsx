@@ -14,7 +14,4 @@ function BidForm() {
     </form>
   )
 }
-
-createRoot(document.getElementById('root')).render(
-  <BidForm />
-);
+export default BidForm;
