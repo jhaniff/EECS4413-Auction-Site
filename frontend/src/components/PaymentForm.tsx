@@ -10,7 +10,8 @@ function PaymentForm({onSubmitPayment}) {
       cardNumber,
       nameOnCard,
       expiryDate,
-      securityCode
+      securityCode,
+      expeditedShipping
     };
 
       function handleSubmit(e) {
