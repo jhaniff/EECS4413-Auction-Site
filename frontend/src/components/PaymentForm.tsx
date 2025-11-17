@@ -55,6 +55,15 @@ function PaymentForm({onSubmitPayment}) {
                    />
                 </label>
        </p>
+       <p>
+                 <label>Expedited Shipping
+                         <input
+                             type="checkbox"
+                             checked={expeditedShipping}
+                             onChange={(e) => setExpeditedShipping(e.target.checked)}
+                          />
+                       </label>
+              </p>
       <input type="submit" />
     </form>
   )
