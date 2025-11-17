@@ -1,5 +1,6 @@
 import PaymentForm from "../components/PaymentForm";
 import { useParams } from "react-router-dom";
+import { placePayment } from "../api/paymentAPI";
 
 function PaymentPage(){
     const {id} = useParams();
