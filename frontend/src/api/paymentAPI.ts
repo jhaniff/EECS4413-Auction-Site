@@ -6,4 +6,5 @@ export async function placePayment(paymentInfo){
         heads: {"Content-Type": "application/json"},
         body: JSON.stringify(paymentInfo)
         });
+    return response.json();
 }
