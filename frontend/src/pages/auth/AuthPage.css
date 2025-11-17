@@ -1,0 +1,187 @@
+/* Full-page layout */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #050816;           /* dark navy bg */
+  padding: 24px;
+}
+
+/* Card */
+.auth-card {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 40px 48px 48px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.25);
+}
+
+/* Title */
+.auth-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+  color: #111827;
+}
+
+/* Tabs (Sign In / Sign Up) */
+.auth-tabs {
+  display: flex;
+  background: #eef0ff;
+  border-radius: 999px;
+  padding: 4px;
+  margin-bottom: 24px;
+}
+
+.auth-tab {
+  flex: 1;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 0;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: #4b5563;
+  transition: background 0.15s ease, color 0.15s ease,
+    box-shadow 0.15s ease, transform 0.05s ease;
+}
+
+.auth-tab.active {
+  background: #4363f7;
+  color: #ffffff;
+  box-shadow: 0 6px 18px rgba(67, 99, 247, 0.45);
+}
+
+.auth-tab:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Form layout – stack everything neatly */
+.auth-form {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Use this on any wrapper div you have around fields */
+.auth-row {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Individual field */
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Labels */
+.auth-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Inputs */
+.auth-input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #111827;
+  background: #ffffff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.auth-input::placeholder {
+  color: #9ca3af;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #4363f7;
+  box-shadow: 0 0 0 3px rgba(67, 99, 247, 0.2);
+}
+
+/* Primary button */
+.auth-button {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 0;
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  background: #4363f7;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.15s ease, box-shadow 0.15s ease,
+    transform 0.03s ease;
+}
+
+.auth-button:hover:not(:disabled) {
+  background: #3350d2;
+  box-shadow: 0 10px 25px rgba(67, 99, 247, 0.45);
+  transform: translateY(-1px);
+}
+
+.auth-button:disabled {
+  opacity: 0.7;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* Error & success text */
+.auth-error {
+  font-size: 13px;
+  color: #dc2626;
+  margin-top: 4px;
+}
+
+.auth-success {
+  font-size: 13px;
+  color: #15803d;
+  margin-top: 4px;
+}
+
+/* Helper links (Forgot password, Back to sign in, etc.) */
+.auth-footer {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.auth-link {
+  color: #4363f7;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+/* Make card breathe a bit on smaller screens */
+@media (max-width: 640px) {
+  .auth-card {
+    padding: 32px 24px 32px;
+    border-radius: 18px;
+  }
+
+  .auth-title {
+    font-size: 26px;
+    text-align: center;
+  }
+
+  .auth-tabs {
+    margin-bottom: 20px;
+  }
+}
