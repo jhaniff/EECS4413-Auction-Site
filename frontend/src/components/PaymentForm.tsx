@@ -5,6 +5,7 @@ function PaymentForm({onSubmitPayment}) {
     const [nameOnCard, setNameOnCard] = useState("");
     const [expiryDate, setExpiryDate] = useState("");
     const [securityCode, setSecurityCode] = useState("");
+    const [expeditedShipping, setExpeditedShipping] = useState(false);
 
     const paymentInfo = {
       cardNumber,
