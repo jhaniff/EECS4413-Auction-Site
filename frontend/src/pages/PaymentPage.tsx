@@ -6,7 +6,7 @@ function PaymentPage(){
     const {id} = useParams();
     function handlePayment(paymentInfo){
         const auctionID = id;
-        const fullPaymentPayload = {auctionID: auctionID, ... paymentInfo};
+        const fullPaymentPayload = {auctionId: auctionID, ... paymentInfo};
         console.log("Card Number:", paymentInfo.cardNumber);
         console.log("Name on Card:", paymentInfo.nameOnCard);
         console.log("Expiry Date:", paymentInfo.expiryDate);
