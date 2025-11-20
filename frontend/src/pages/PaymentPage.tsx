@@ -5,6 +5,9 @@ import { placePayment } from "../api/paymentAPI";
 function PaymentPage(){
      const { id } = useParams();
      const auctionID = id;
+     const [winner, setWinner] = useState(null);
+     useEffect(() => {
+         }
      async function handlePayment(paymentInfo){
            const expiryDateISO = new Date(paymentInfo.expiryDate).toISOString();
            const fullPaymentPayload = {
