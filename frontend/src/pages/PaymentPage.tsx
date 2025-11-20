@@ -18,7 +18,7 @@ function PaymentPage(){
            };
            //console.log("Payment Payload:", fullPaymentPayload);
            const response = await placePayment(fullPaymentPayload);
-           console.log("Backend repsonse: ", response);
+           console.log("Backend response: ", response);
      }
 
     return(
