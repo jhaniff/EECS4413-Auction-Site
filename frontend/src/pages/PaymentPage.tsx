@@ -14,7 +14,7 @@ function PaymentPage(){
                nameOnCard: paymentInfo.nameOnCard,
                expiryDate: expiryDateISO,
                securityCode: paymentInfo.securityCode,
-               isExpedited: paymentInfo.expeditedShipping
+               expedited: paymentInfo.expeditedShipping
            };
            //console.log("Payment Payload:", fullPaymentPayload);
            const response = await placePayment(fullPaymentPayload);
