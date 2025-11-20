@@ -6,16 +6,19 @@ function PaymentPage(){
      const { id } = useParams();
      const auctionID = id;
      async function handlePayment(paymentInfo){
+           const expiryDateISO = new Date(paymentInfo.expiryDate).toISOString();
            const fullPaymentPayload = {
                auctionID: parseInt(auctionID),
                user: {userId: 1},
                cardNumber: paymentInfo.cardNumber,
                nameOnCard: paymentInfo.nameOnCard,
-               expiryDate: paymentInfo.expiryDate,
+               expiryDate: expiryDateISO,
                securityCode: paymentInfo.securityCode,
                isExpedited: paymentInfo.expeditedShipping
            };
-           console.log("Payment Payload:", fullPaymentPayload);
+           //console.log("Payment Payload:", fullPaymentPayload);
+           const response = await placePayment(fullPaymentPayload);
+           console.log("Backend repsonse: ", response);
      }
 
     return(
