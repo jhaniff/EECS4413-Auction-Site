@@ -21,6 +21,6 @@ function PaymentPage(){
             <h2>Winning Bidder</h2>
             <PaymentForm onSubmitPayment={handlePayment}/>
         </div>
-        )
+        );
     }
 export default PaymentPage;
