@@ -7,7 +7,16 @@ function PaymentPage(){
      const auctionID = id;
      const [winner, setWinner] = useState(null);
      useEffect(() => {
-         }
+         fetch('http://localhost:8080/auction/${id}')
+            .then(resp => resp.json())
+            .then(data => {
+                setWinner({
+                    userId: data.highestBidderId,
+                    name: data.highestBidderName
+
+                });
+            })
+         }, []);
      async function handlePayment(paymentInfo){
            const expiryDateISO = new Date(paymentInfo.expiryDate).toISOString();
            const fullPaymentPayload = {
