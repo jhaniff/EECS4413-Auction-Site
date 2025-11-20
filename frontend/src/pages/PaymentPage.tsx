@@ -5,6 +5,7 @@ import { placePayment } from "../api/paymentAPI";
 function PaymentPage(){
      const { id } = useParams();
      const auctionID = id;
+     async function handlePayment(paymentInfo){
            const fullPaymentPayload = {
                auctionID: parseInt(auctionID),
                user: {userId: 1},
@@ -15,6 +16,7 @@ function PaymentPage(){
                isExpedited: paymentInfo.isExpedited
            };
            console.log("Payment Payload:", fullPaymentPayload);
+     }
 
     return(
         <div>
