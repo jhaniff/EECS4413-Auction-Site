@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { placePayment } from "../api/paymentAPI";
 
 function PaymentPage(){
+     const { id } = useParams();
      const auctionID = id;
            const fullPaymentPayload = {
                auctionID: parseInt(auctionID),
