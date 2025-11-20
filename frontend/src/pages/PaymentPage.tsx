@@ -6,11 +6,11 @@ function PaymentPage(){
      const auctionID = id;
            const fullPaymentPayload = {
                auctionID: parseInt(auctionID),
-               user: {userId: 1}
-               cardNumber: paymentInfo.cardNumber
-               nameOnCard: paymentInfo.nameOnCard
-               expiryDate: paymentInfo.expiryDate
-               securityCode: paymentInfo.securityCode
+               user: {userId: 1},
+               cardNumber: paymentInfo.cardNumber,
+               nameOnCard: paymentInfo.nameOnCard,
+               expiryDate: paymentInfo.expiryDate,
+               securityCode: paymentInfo.securityCode,
                isExpedited: paymentInfo.isExpedited
            };
            console.log("Card Number:", paymentInfo.cardNumber);
