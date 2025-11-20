@@ -18,8 +18,6 @@ function PaymentPage(){
            console.log("Expiry Date:", paymentInfo.expiryDate);
            console.log("Security Code:", paymentInfo.securityCode);
            console.log("Shipping Status:", paymentInfo.expeditedShipping);
-       }
-
     return(
         <div>
             <h2>Winning Bidder</h2>
