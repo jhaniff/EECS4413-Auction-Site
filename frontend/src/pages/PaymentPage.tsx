@@ -13,7 +13,7 @@ function PaymentPage(){
                nameOnCard: paymentInfo.nameOnCard,
                expiryDate: paymentInfo.expiryDate,
                securityCode: paymentInfo.securityCode,
-               isExpedited: paymentInfo.isExpedited
+               isExpedited: paymentInfo.expeditedShipping
            };
            console.log("Payment Payload:", fullPaymentPayload);
      }
