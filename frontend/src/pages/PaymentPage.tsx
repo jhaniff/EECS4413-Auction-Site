@@ -14,8 +14,10 @@ function PaymentPage(){
                 setAuction(data);
                 return fetch(`http://localhost:8080/auction/${id}/winner`);
                 })
-            .then()
-            .then
+            .then(resp => resp.json())
+            .then(winner => {
+                setWinner(winner);
+            })
             })
          }, []);
      async function handlePayment(paymentInfo){
