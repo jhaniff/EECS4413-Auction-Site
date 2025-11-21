@@ -11,10 +11,11 @@ function PaymentPage(){
          fetch(`http://localhost:8080/auction/${id}`)
             .then(resp => resp.json())
             .then(data => {
-                setWinner({
-                    userId: data.highestBidderId,
-                    name: data.highestBidderName
-                });
+                setAuction(data);
+                return fetch(`http://localhost:8080/auction/${id}/winner`);
+                })
+            .then()
+            .then
             })
          }, []);
      async function handlePayment(paymentInfo){
