@@ -6,6 +6,7 @@ function PaymentPage(){
      const { id } = useParams();
      const auctionID = id;
      const [winner, setWinner] = useState(null);
+     const [auction, setAuction] = useState(null);
      useEffect(() => {
          fetch(`http://localhost:8080/auction/${id}`)
             .then(resp => resp.json())
