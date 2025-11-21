@@ -1,0 +1,143 @@
+version: "3.9"
+
+services:
+  eureka-server:
+    build:
+      context: ./service-registry
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    image: eureka-server
+    ports:
+      - "8761:8761" # Exposed so we can see eureka UI
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - backend
+
+  api-gateway:
+    build:
+      context: ./api-gateway-service
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    image: api-gateway
+    ports:
+      - "8080:8080"      # Gateway Entry point exposed to outside
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+    depends_on:
+      - eureka-server
+      - authentication-service
+      - auction-service
+      - item-service
+      - payment-service
+    networks:
+      - backend
+
+  authentication-service:
+    build:
+      context: ./authentication-service
+      dockerfile: Dockerfile
+    container_name: authentication-service
+    image: authentication-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - FORGOT_PASSWORD_SECRET=${FORGOT_PASSWORD_SECRET}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT}
+      - FRONTEND_URL=${FRONTEND_URL}
+    depends_on:
+      - eureka-server
+      - postgres
+      - mailhog
+    networks:
+      - backend
+
+  auction-service:
+    build:
+      context: ./auction-service
+      dockerfile: Dockerfile
+    container_name: auction-service
+    image: auction-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - eureka-server
+      - postgres
+    networks:
+      - backend
+
+  item-service:
+    build:
+      context: ./item-service
+      dockerfile: Dockerfile
+    container_name: item-service
+    image: item-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - eureka-server
+      - postgres
+    networks:
+      - backend
+
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    image: payment-service
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - eureka-server
+      - postgres
+    networks:
+      - backend
+  
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=auction
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    ports:
+      - "5432:5432"
+    
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    networks:
+      - backend
+    ports:
+      - "1025:1025"
+      - "8025:8025"  
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  postgres_data:
