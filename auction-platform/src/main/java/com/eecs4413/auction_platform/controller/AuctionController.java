@@ -49,7 +49,8 @@ public class AuctionController {
     }
     @GetMapping("/{auctionId}/winner")
     public ResponseEntity<User>getAuctionWinner(@PathVariable Long auctionId){
-         return ResponseEntity.ok(auctionService.getHighestBidder());
+         Auction auction = auctionService.getAuction(auctionId);
+         return ResponseEntity.ok(auction.getHighestBidder());
     }
 
 }
