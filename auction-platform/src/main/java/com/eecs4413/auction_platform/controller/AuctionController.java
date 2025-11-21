@@ -47,5 +47,9 @@ public class AuctionController {
     public ResponseEntity<BidResponseDTO> submitBid(@Valid @RequestBody BidRequestDTO bid){
         return ResponseEntity.ok(auctionService.placeBid(bid));
     }
+    @GetMapping("/{auctionId}/winner")
+    public ResponseEntity<User>getAuctionWinner(@PathVariable Long auctionId){
+         return ResponseEntity.ok(auctionService.getHighestBidder());
+    }
 
 }
