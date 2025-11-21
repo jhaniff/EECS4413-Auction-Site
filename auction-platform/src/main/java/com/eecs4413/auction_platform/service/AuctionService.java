@@ -168,4 +168,8 @@ public class AuctionService {
         long minutes = remaining.toMinutesPart();
         return String.format("%dh %02dm", hours, minutes);
     }
+    public Auction getAuction(Long auctionId){
+          return auctionRepository.findById(auctionId)
+                  .orElseThrow(() -> new ResourceNotFoundException("Auction not found.  "));
+    }
 }
