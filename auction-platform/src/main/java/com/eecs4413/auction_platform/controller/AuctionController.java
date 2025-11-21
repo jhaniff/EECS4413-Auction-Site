@@ -4,6 +4,8 @@ import com.eecs4413.auction_platform.dto.AuctionDTO;
 import com.eecs4413.auction_platform.dto.AuctionDetailDTO;
 import com.eecs4413.auction_platform.dto.BidRequestDTO;
 import com.eecs4413.auction_platform.dto.BidResponseDTO;
+import com.eecs4413.auction_platform.model.Auction;
+import com.eecs4413.auction_platform.model.User;
 import com.eecs4413.auction_platform.service.AuctionService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
