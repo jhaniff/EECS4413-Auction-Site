@@ -33,8 +33,8 @@ function PaymentPage(){
      }
 
     return(
-        <div>
-            <h2>Winning Bidder</h2>
+        <div style={{display: "flex", gap: "850px"}}>
+            <h2>Credit Card</h2>
             <PaymentForm onSubmitPayment={handlePayment}/>
         </div>
         );
