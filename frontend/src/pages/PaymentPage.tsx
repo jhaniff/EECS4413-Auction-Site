@@ -14,11 +14,10 @@ function PaymentPage(){
             .then(data => {
                 setAuction(data);
                 return fetch(`http://localhost:8080/auction/${id}/winner`);
-                })
-            .then(resp => resp.json())
-            .then(winner => {
-                setWinner(winner);
             })
+            .then(resp => resp.json())
+            .then(winnerInfo => {
+                setWinner(winnerInfo);
             })
          }, [id]);
      async function handlePayment(paymentInfo){
@@ -41,8 +40,8 @@ function PaymentPage(){
         <div style={{display: "flex", gap: "850px"}}>
             <div>
                 <h2>Winning Bidder</h2>
-                <p>First Name: </p>
-                <p>Last Name: </p>
+                <p>First Name: {winner.firstName}</p>
+                <p>Last Name: {winner.lastName}</p>
                 <p>Street Name: </p>
                 <p>Street Number: </p>
                 <p>City: </p>
