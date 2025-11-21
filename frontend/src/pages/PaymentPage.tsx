@@ -34,8 +34,23 @@ function PaymentPage(){
 
     return(
         <div style={{display: "flex", gap: "850px"}}>
-            <h2>Credit Card</h2>
-            <PaymentForm onSubmitPayment={handlePayment}/>
+            <div>
+                <h2>Winning Bidder</h2>
+                <p>First Name: </p>
+                <p>Last Name: </p>
+                <p>Street Name: </p>
+                <p>Street Number: </p>
+                <p>City: </p>
+                <p>Province: </p>
+                <p>Country: </p>
+                <p>Postal Code: </p>
+                <p>Total Cost: </p>
+
+            </div>
+            <div>
+                <h2>Credit Card</h2>
+                <PaymentForm onSubmitPayment={handlePayment}/>
+            </div>
         </div>
         );
     }
