@@ -7,7 +7,7 @@ function ReceiptPage(){
      const [payment, setPayment] = useState(null);
 
      useEffect(() => {
-         fetch(`http://localhost:8080/payment/${paymentId}/receipt`)
+         fetch(`http://localhost:8080/payment/receipt/${paymentId}`)
             .then(resp => resp.json())
             .then(data => {setPayment(data)});
          }, [paymentId]);
