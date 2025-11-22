@@ -52,6 +52,19 @@ public class AuctionController {
     @GetMapping("/{auctionId}/winner")
     public ResponseEntity<User>getAuctionWinner(@PathVariable Long auctionId){
          Auction auction = auctionService.getAuction(auctionId);
+         User winner = auction.getHighestBidder();
+         WinnerDTO winnerDto = WinnerDTO.builder()
+                 .userId(winner.getUserId())
+                 .firstName(winner.getFirstName())
+                 .lastName(winner.getLastName())
+                 .streetName(winner.getAddress().getStreetName())
+                 .streetNumber(winner.getAddress().getStreetNumber())
+                 .city(winner.getAddress().getCity())
+                 .province(winner.getAddress().getProvince())
+                 .country(winner.getAddress().getCountry())
+                 .postalCode(winner.getAddress().getPostalCode())
+                 .build();
+
          return ResponseEntity.ok(auction.getHighestBidder());
     }
 
