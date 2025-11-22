@@ -1,7 +1,16 @@
+import { useParams } from "react-router-dom";
+import { useState, useEffect} from "react";
+
 function ReceiptPage(){
      const { id } = useParams();
      const paymentId = id;
+     const [payment, setPayment] = useState(null);
 
+     useEffect(() => {
+         fetch(`http://localhost:8080/payment/${paymentId}/receipt`)
+            .then(resp => resp.json())
+            .then(data => {setPayment(data));
+         }, [paymentId]);
 
     return(
         <div style={{display: "flex", gap: "850px"}}>
@@ -23,8 +32,7 @@ function ReceiptPage(){
                    )}
             </div>
             <div>
-                <h2>Credit Card</h2>
-                <PaymentForm onSubmitPayment={handlePayment}/>
+                <h2>Shipping Details</h2>
             </div>
         </div>
         );
