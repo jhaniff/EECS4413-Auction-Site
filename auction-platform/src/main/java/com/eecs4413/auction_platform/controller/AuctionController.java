@@ -57,7 +57,6 @@ public class AuctionController {
                  .streetName(winner.getAddress().getStreetName())
                  .streetNumber(winner.getAddress().getStreetNumber())
                  .city(winner.getAddress().getCity())
-                 .province(winner.getAddress().getProvince())
                  .country(winner.getAddress().getCountry())
                  .postalCode(winner.getAddress().getPostalCode())
                  .build();
