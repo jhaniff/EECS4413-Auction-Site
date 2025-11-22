@@ -80,7 +80,7 @@ public class PaymentService {
                     throw new IllegalArgumentException("Invalid security code.  ");
                }
                paymentRepository.save(payment);
-               createReceipt(payment);
+               createReceipt(payment.getPaymentID());
 
                PaymentResponseDTO paymentResponseDTO =  PaymentResponseDTO.builder()
                        .paymentID(payment.getPaymentID())
@@ -98,10 +98,10 @@ public class PaymentService {
           }
      }
      @Transactional
-     public ReceiptResponseDTO createReceipt(Payment payment){
+     public ReceiptResponseDTO createReceipt(Long paymentId){
 
           try {
-               Payment storedPayment = paymentRepository.findDetailedById(payment.getPaymentID())
+               Payment storedPayment = paymentRepository.findDetailedById(paymentId)
                        .orElseThrow(() -> new IllegalArgumentException("Payment not found.  "));
                List<Bid> allAuctionBids = storedPayment.getAuction().getBids();
                int highestBidAmount = 0;
