@@ -33,6 +33,9 @@ function PaymentPage(){
            };
            //console.log("Payment Payload:", fullPaymentPayload);
            const response = await placePayment(fullPaymentPayload);
+           if(response?.paymentID){
+               navigate(`/payment/${response.paymentID}/receipt`);
+               }
            console.log("Backend response: ", response);
      }
 
