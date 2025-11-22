@@ -9,7 +9,7 @@ function ReceiptPage(){
      useEffect(() => {
          fetch(`http://localhost:8080/payment/${paymentId}/receipt`)
             .then(resp => resp.json())
-            .then(data => {setPayment(data));
+            .then(data => {setPayment(data)});
          }, [paymentId]);
 
     return(
