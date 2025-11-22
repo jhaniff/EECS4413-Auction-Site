@@ -51,7 +51,7 @@ function PaymentPage(){
                     <p>City: {winner.city}</p>
                     <p>Country: {winner.country}</p>
                     <p>Postal Code: {winner.postalCode}</p>
-                    <p>Total Cost: {auction.}</p>
+                    <p>Total Cost: {auction.currentPrice}</p>
                     </>
                    )}
             </div>
