@@ -1,9 +1,6 @@
 package com.eecs4413.auction_platform.controller;
 
-import com.eecs4413.auction_platform.dto.AuctionDTO;
-import com.eecs4413.auction_platform.dto.AuctionDetailDTO;
-import com.eecs4413.auction_platform.dto.BidRequestDTO;
-import com.eecs4413.auction_platform.dto.BidResponseDTO;
+import com.eecs4413.auction_platform.dto.*;
 import com.eecs4413.auction_platform.model.Auction;
 import com.eecs4413.auction_platform.model.User;
 import com.eecs4413.auction_platform.service.AuctionService;
@@ -50,7 +47,7 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.placeBid(bid));
     }
     @GetMapping("/{auctionId}/winner")
-    public ResponseEntity<User>getAuctionWinner(@PathVariable Long auctionId){
+    public ResponseEntity<WinnerDTO>getAuctionWinner(@PathVariable Long auctionId){
          Auction auction = auctionService.getAuction(auctionId);
          User winner = auction.getHighestBidder();
          WinnerDTO winnerDto = WinnerDTO.builder()
@@ -65,7 +62,7 @@ public class AuctionController {
                  .postalCode(winner.getAddress().getPostalCode())
                  .build();
 
-         return ResponseEntity.ok(auction.getHighestBidder());
+         return ResponseEntity.ok(winnerDto);
     }
 
 }
