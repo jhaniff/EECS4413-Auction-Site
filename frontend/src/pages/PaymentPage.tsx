@@ -1,5 +1,6 @@
 import PaymentForm from "../components/PaymentForm";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { placePayment } from "../api/paymentAPI";
 import { useState, useEffect} from "react";
 function PaymentPage(){
@@ -7,6 +8,7 @@ function PaymentPage(){
      const auctionID = id;
      const [winner, setWinner] = useState(null);
      const [auction, setAuction] = useState(null);
+     const navigate = useNavigate();
 
      useEffect(() => {
          fetch(`http://localhost:8080/auction/${id}`)
