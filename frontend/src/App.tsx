@@ -9,6 +9,8 @@ function App() {
       <Routes>
         <Route path="/auction/:id" element={<AuctionDetailPage />} />
         <Route path="/auction/:id/payment" element={<PaymentPage />} />
+        <Route path="/receipt/:paymentId" element={<ReceiptPage />} />
+
       </Routes>
     </BrowserRouter>
   );
