@@ -57,11 +57,11 @@ public class AuctionController {
                  .userId(winner.getUserId())
                  .firstName(winner.getFirstName())
                  .lastName(winner.getLastName())
-                 .streetName(winner.getAddress().getStreetName())
-                 .streetNumber(winner.getAddress().getStreetNumber())
-                 .city(winner.getAddress().getCity())
-                 .country(winner.getAddress().getCountry())
-                 .postalCode(winner.getAddress().getPostalCode())
+                 .streetName(winner.getAddress() != null ? winner.getAddress().getStreetName() : "")
+                 .streetNumber(winner.getAddress() != null ? winner.getAddress().getStreetNumber() : "")
+                 .city(winner.getAddress() != null ? winner.getAddress().getCity() : "")
+                 .country(winner.getAddress() != null ? winner.getAddress().getCountry() : "")
+                 .postalCode(winner.getAddress() != null ? winner.getAddress().getPostalCode() : "")
                  .build();
 
          return ResponseEntity.ok(winnerDto);
