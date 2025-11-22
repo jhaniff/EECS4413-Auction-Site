@@ -17,10 +17,6 @@ function ReceiptPage(){
         <div style={{display: "flex", gap: "850px"}}>
             <div>
                 <h2>Winning Bidder</h2>
-                {!winner ?(
-                    <p>Fetching winner info.  </p>
-                ):(
-                    <>
                     <p>First Name: {payment.firstName}</p>
                     <p>Last Name: {payment.lastName}</p>
                     <p>Street Name: {payment.streetName}</p>
