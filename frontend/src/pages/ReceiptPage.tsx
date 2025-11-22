@@ -2,8 +2,7 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect} from "react";
 
 function ReceiptPage(){
-     const { id } = useParams();
-     const paymentId = id;
+     const { paymentId } = useParams();
      const [payment, setPayment] = useState(null);
 
      useEffect(() => {
