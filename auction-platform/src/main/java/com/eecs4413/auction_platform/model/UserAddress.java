@@ -30,6 +30,9 @@ public class UserAddress {
     @Column(nullable = false)
     private String city;
 
+     @Column(nullable = false)
+     private String province;
+
     @Column(nullable = false)
     private String country;
 
