@@ -26,7 +26,7 @@ public class PaymentController {
      public ResponseEntity<PaymentResponseDTO> placePayment(@RequestBody PaymentRequestDTO request){
           return ResponseEntity.ok(paymentService.placePayment(request));
      }
-     @PostMapping("/receipt/{paymentId}")
+     @PostMapping("/{paymentId}/receipt")
      public ResponseEntity<ReceiptResponseDTO> createReceipt(@RequestBody Payment payment){
           return ResponseEntity.ok(paymentService.createReceipt(payment));
      }
