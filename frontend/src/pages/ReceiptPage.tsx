@@ -29,7 +29,7 @@ function ReceiptPage(){
             <div>
                 <h2>Shipping Details</h2>
                     <p>Your order has been confirmed.  </p>
-                    <p>Delivery Date: </p>
+                    <p>Delivery Date: {payment.shippingDate}</p>
             </div>
         </div>
         );
