@@ -1,5 +1,6 @@
 function ReceiptPage(){
-    const { paymentId } = useParams();
+     const { id } = useParams();
+     const paymentId = id;
 
 
     return(
