@@ -50,6 +50,9 @@ public class AuctionController {
     public ResponseEntity<WinnerDTO>getAuctionWinner(@PathVariable Long auctionId){
          Auction auction = auctionService.getAuction(auctionId);
          User winner = auction.getHighestBidder();
+         if(winner == null){
+              return ResponseEntity.ok(null);
+         }
          WinnerDTO winnerDto = WinnerDTO.builder()
                  .userId(winner.getUserId())
                  .firstName(winner.getFirstName())
