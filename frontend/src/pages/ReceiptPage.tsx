@@ -20,14 +20,14 @@ function ReceiptPage(){
                     <p>Fetching winner info.  </p>
                 ):(
                     <>
-                    <p>First Name: {winner.firstName}</p>
-                    <p>Last Name: {winner.lastName}</p>
-                    <p>Street Name: {winner.streetName}</p>
-                    <p>Street Number: {winner.streetNumber}</p>
-                    <p>City: {winner.city}</p>
-                    <p>Country: {winner.country}</p>
-                    <p>Postal Code: {winner.postalCode}</p>
-                    <p>Total Cost: {auction.currentPrice}</p>
+                    <p>First Name: {payment.firstName}</p>
+                    <p>Last Name: {payment.lastName}</p>
+                    <p>Street Name: {payment.streetName}</p>
+                    <p>Street Number: {payment.streetNumber}</p>
+                    <p>City: {payment.city}</p>
+                    <p>Country: {payment.country}</p>
+                    <p>Postal Code: {payment.postalCode}</p>
+                    <p>Total Cost: {payment.totalAmount}</p>
                     </>
                    )}
             </div>
