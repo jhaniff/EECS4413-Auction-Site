@@ -24,9 +24,7 @@ function ReceiptPage(){
                     <p>City: {payment.city}</p>
                     <p>Country: {payment.country}</p>
                     <p>Postal Code: {payment.postalCode}</p>
-                    <p>Total Cost: {payment.totalAmount}</p>
-                    </>
-                   )}
+                    <p>Total Paid: {payment.totalPaid}</p>
             </div>
             <div>
                 <h2>Shipping Details</h2>
