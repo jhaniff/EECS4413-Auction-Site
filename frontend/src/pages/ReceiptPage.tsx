@@ -11,7 +11,9 @@ function ReceiptPage(){
             .then(resp => resp.json())
             .then(data => {setPayment(data)});
          }, [paymentId]);
-
+     if(!payment){
+         return <p>Receipt is generating.  </p>
+         }
     return(
         <div style={{display: "flex", gap: "850px"}}>
             <div>
