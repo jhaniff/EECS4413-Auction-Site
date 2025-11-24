@@ -3,7 +3,8 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from 'react';
 
 function AuctionDetailPage(){
-    const { auctionId } = useParams();
+    const { id } = useParams();
+    const auctionId = id;
     const [auction, setAuction] = useState(null);
 
     useEffect(() => {
