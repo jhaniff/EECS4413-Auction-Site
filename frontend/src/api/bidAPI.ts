@@ -1,4 +1,4 @@
-export async function placeBid(bidInfo){
+export async function placeBid(auctionId, amount){
     const URL = "http://localhost:8080/auction/bid";
 
     const response = await fetch(URL, {
