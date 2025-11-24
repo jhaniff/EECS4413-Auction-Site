@@ -25,6 +25,12 @@ function AuctionDetailPage(){
             <p>Highest Bid: {auction.currHighestBid}</p>
 
             <BidForm auctionId={auctionId} currHighestBid={currHighestBid}/>
+
+            <button
+                onClick={() =>
+                    (window.location.href = `/payment/${auctionId}`)
+                }
+            >
         </div>
         )
     }
