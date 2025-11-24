@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { placeBid } from '../api/bidAPI';
 
-function BidForm({onSubmitBid}) {
-    const [bid, setBid] = useState("");
+function BidForm({auctionId, currentHighestBid}) {
+    const [amount, setAmount] = useState("");
 
       function handleChange(e) {
         setBid(e.target.value);
