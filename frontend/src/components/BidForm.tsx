@@ -3,6 +3,7 @@ import { placeBid } from '../api/bidAPI';
 
 function BidForm({auctionId, currentHighestBid}) {
     const [amount, setAmount] = useState("");
+    const [message, setMessage] = useState("");
 
       function handleChange(e) {
         setBid(e.target.value);
