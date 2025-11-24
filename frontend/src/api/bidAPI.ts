@@ -6,8 +6,9 @@ export async function placeBid(auctionId, amount){
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
-            auctionId: auctionId,
-            amount: amount
+            auctionId: Number(auctionId),
+            bidderId: Number(bidderId),
+            amount: Number(amount)
         })
     });
     return response.json();
