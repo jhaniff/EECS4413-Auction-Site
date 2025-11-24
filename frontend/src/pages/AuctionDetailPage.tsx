@@ -3,14 +3,14 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from 'react';
 
 function AuctionDetailPage(){
-    const { id } = useParams();
+    const { auctionId } = useParams();
     const [auction, setAuction] = useState(null);
 
     useEffect(() => {
-      fetch(`http://localhost:8080/auction/${id}`)
+      fetch(`http://localhost:8080/auction/${auctionId}`)
        .then(resp => resp.json())
        .then(data => setAuction(data));
-    }, [id]);
+    }, [auctionId]);
 
     if(!auction){
         return <p>One moment please...</p>;
