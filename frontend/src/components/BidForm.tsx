@@ -6,7 +6,7 @@ function BidForm({auctionId, currentHighestBid}) {
     const [message, setMessage] = useState("");
 
       function handleChange(e) {
-        setBid(e.target.value);
+        setAmount(e.target.value);
       }
 
       function handleSubmit(e) {
