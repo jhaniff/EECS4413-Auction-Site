@@ -3,8 +3,8 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from 'react';
 
 function AuctionDetailPage(){
-      const { id } = useParams();
-      const [auction, setAuction] = useState(null);
+    const { id } = useParams();
+    const [auction, setAuction] = useState(null);
 
       useEffect(() => {
           fetch(`http://localhost:8080/auction/${id}`)
