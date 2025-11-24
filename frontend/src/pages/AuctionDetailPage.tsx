@@ -16,6 +16,8 @@ function AuctionDetailPage(){
         return <p>One moment please...</p>;
     }
 
+    const currentHighestBid = auction.currentHighestBid || auction.startingPrice;
+
     return(
         <div>
             <h2> Auction Details</h2>
