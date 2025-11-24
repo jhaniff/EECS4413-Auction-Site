@@ -20,8 +20,10 @@ function AuctionDetailPage(){
 
     return(
         <div>
-            <h2> Auction Details</h2>
-            <p>Auction ID: {id}</p>
+            <h2>{auction.itemName}</h2>
+            <p>Starting Price: {auction.startingPrice}</p>
+            <p>Highest Bid: {auction.currHighestBid}</p>
+
             <BidForm onSubmitBid={handleBid}/>
         </div>
         )
