@@ -6,11 +6,15 @@ function AuctionDetailPage(){
     const { id } = useParams();
     const [auction, setAuction] = useState(null);
 
-      useEffect(() => {
-          fetch(`http://localhost:8080/auction/${id}`)
-           .then(resp => resp.json())
-           .then(data => setAuction(data));
-      }, [id]);
+    useEffect(() => {
+      fetch(`http://localhost:8080/auction/${id}`)
+       .then(resp => resp.json())
+       .then(data => setAuction(data));
+    }, [id]);
+
+    if(!auction){
+        return <p>One moment please...</p>;
+    }
 
     return(
         <div>
