@@ -32,6 +32,6 @@ function BidForm({auctionId, currentHighestBid}) {
          />
         <button type="submit">Submit Bid</button>
     </form>
-  )
+  );
 }
 export default BidForm;
