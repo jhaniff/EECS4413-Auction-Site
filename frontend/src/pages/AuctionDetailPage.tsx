@@ -32,6 +32,6 @@ function AuctionDetailPage(){
                 }
             >
         </div>
-        )
+        );
     }
 export default AuctionDetailPage;
