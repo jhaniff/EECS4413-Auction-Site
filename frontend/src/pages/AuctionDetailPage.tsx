@@ -4,11 +4,7 @@ import { useEffect, useState } from 'react';
 
 function AuctionDetailPage(){
       const { id } = useParams();
-      function handleBid(bidAmount: string){
-            console.log("Submitting bid...");
-            console.log("Auction ID:", id);
-            console.log("Bid amount:", bidAmount);
-          }
+      const [auction, setAuction] = useState(null);
 
     return(
         <div>
