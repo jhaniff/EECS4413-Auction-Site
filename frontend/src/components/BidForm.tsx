@@ -9,7 +9,7 @@ function BidForm({auctionId, currentHighestBid}) {
         setAmount(e.target.value);
       }
 
-      function handleSubmit(e) {
+      async function handleSubmit(e) {
         e.preventDefault();
         const bidAmount = Number(amount)
         if(bidAmount <= currentHighestBid){
