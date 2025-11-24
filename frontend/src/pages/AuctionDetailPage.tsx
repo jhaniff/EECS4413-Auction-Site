@@ -30,7 +30,7 @@ function AuctionDetailPage(){
                 onClick={() =>
                     (window.location.href = `/payment/${auctionId}`)
                 }
-            >
+            >Proceed to payment</button>
         </div>
         );
     }
