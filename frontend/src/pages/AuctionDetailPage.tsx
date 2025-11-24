@@ -33,6 +33,6 @@ function AuctionDetailPage(){
                 }
             >Proceed to payment</button>
         </div>
-        );
-    }
+    );
+}
 export default AuctionDetailPage;
