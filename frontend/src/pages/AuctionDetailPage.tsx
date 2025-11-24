@@ -24,7 +24,7 @@ function AuctionDetailPage(){
             <p>Starting Price: {auction.startingPrice}</p>
             <p>Highest Bid: {auction.currHighestBid}</p>
 
-            <BidForm onSubmitBid={handleBid}/>
+            <BidForm auctionId={auctionId} currHighestBid={currHighestBid}/>
         </div>
         )
     }
