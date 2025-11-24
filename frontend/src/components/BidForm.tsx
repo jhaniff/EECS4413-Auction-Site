@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { placeBid } from '../api/bidAPI';
 
 function BidForm({onSubmitBid}) {
     const [bid, setBid] = useState("");
