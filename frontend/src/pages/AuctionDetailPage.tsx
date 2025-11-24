@@ -1,6 +1,6 @@
 import BidForm from "../components/BidForm";
 import { useParams } from "react-router-dom";
-import { useEffects } from 'react';
+import { useEffect, useState } from 'react';
 
 function AuctionDetailPage(){
       const { id } = useParams();
