@@ -28,7 +28,7 @@ function BidForm({auctionId, currentHighestBid}) {
         <input
             type="number"
             value="amount"
-            onChange={handleChange}
+            onChange={(e) => setAmount(e.target.value)}
          />
         </label>
       <input type="submit" />
