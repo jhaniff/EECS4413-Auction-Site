@@ -4,7 +4,10 @@ export async function placeBid(auctionId, amount){
     const response = await fetch(URL, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(paymentInfo)
-        });
+        body: JSON.stringify({
+            auctionId: auctionId
+            amount: amount
+        })
+    });
     return response.json();
 }
