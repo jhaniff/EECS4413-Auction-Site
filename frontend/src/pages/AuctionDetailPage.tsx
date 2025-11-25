@@ -24,6 +24,7 @@ function AuctionDetailPage(){
             <h2>{auction.itemName}</h2>
             <p>Starting Price: {auction.startPrice}</p>
             <p>Highest Bid: {currentHighestBid}</p>
+            <p>Time Remaining: {remaining}</p>
 
             <BidForm auctionId={auctionId} currentHighestBid={currentHighestBid}/>
 
