@@ -6,6 +6,7 @@ function AuctionDetailPage(){
     const { id } = useParams();
     const auctionId = id;
     const [auction, setAuction] = useState(null);
+    const [remaining, setRemaining] = useState("");
 
     useEffect(() => {
       fetch(`http://localhost:8080/auction/${auctionId}`)
