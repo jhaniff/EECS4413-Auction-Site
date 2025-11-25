@@ -14,6 +14,27 @@ function AuctionDetailPage(){
        .then(data => setAuction(data));
     }, [auctionId]);
 
+    useEffect(() => {
+      if(!auction) return;
+      function updateRemaining(){
+        const end = new Date(auction.endsAt).getTime();
+        const now = Date.now();
+        const diff = end - now;
+        if(diff <= 0){
+          setRemaining("Ended");
+          return;
+        }
+        const hours = Math.floor(diff / 3600000);
+        const minutes = Math.floor((diff % 3600000) / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        const formatted = `${hours}h ${String(minutes).padStart(2,"0")}m ${String(seconds).padStart(2,"0")}s`;
+        setRemaining(formatted);
+      }
+      updateRemaining();
+      const interval = setInterval(updateRemaining, 1000);
+      return () => clearInterval(interval);
+    }, [auction]);
+
     if(!auction){
         return <p>One moment please...</p>;
     }
