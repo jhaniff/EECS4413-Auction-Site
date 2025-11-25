@@ -51,9 +51,14 @@ function AuctionDetailPage(){
             <BidForm auctionId={auctionId} currentHighestBid={currentHighestBid}/>
 
             <button
-                onClick={() =>
-                    window.location.href = `/auction/${auctionId}/payment`
-                }
+                onClick={() => {
+                    const userId = Number(localStorage.getItem("userId"));
+                    if(userId !== auction.highestBidderId){
+                        alert("Only the winner of the auction can proceed to payment.");
+                        return;
+                    }
+                    window.location.href = `/auction/${auctionId}/payment`;
+                }}
             >Proceed to payment</button>
         </div>
     );
