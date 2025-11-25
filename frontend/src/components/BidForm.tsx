@@ -12,9 +12,15 @@ function BidForm({auctionId, currentHighestBid}) {
             setMessage(`Your bid must be larger than $${currentHighestBid}`);
             return;
         }
-        const result = await placeBid(auctionId, amount);
-        setMessage(result.message);
-        if(result.success){
+        const result = await placeBid(auctionId, bidAmount);
+        if(result.error){
+            setMessage(result.error);
+            return;
+        }
+        if(result.message){
+            setMessage(result.message);
+        }
+        if(result.newHighestBid){
             setAmount("");
         }
       }
