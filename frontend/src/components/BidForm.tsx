@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { placeBid } from '../api/bidAPI';
+import "../styles/auctionStyles.css";
 
 function BidForm({auctionId, currentHighestBid}) {
     const [amount, setAmount] = useState("");
@@ -26,15 +27,16 @@ function BidForm({auctionId, currentHighestBid}) {
     }
 
     return (
-        <form onSubmit={handleSubmit}>
-            <h2>Bid Amount:</h2>
+        <form onSubmit={handleSubmit} className="bid-form">
+            <h2 className="label-row">Bid Amount:</h2>
             <input
                 type="number"
+                className="bid-input"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
             />
-            <button type="submit">Submit Bid</button>
-            {message && <p>{message}</p>}
+            <button type="submit" className="button-primary">Submit Bid</button>
+            {message && <p className="info-box">{message}</p>}
         </form>
     );
 }
