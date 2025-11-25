@@ -17,7 +17,7 @@ function AuctionDetailPage(){
         return <p>One moment please...</p>;
     }
 
-    const currentHighestBid = auction.currentHighestBid || auction.startingPrice;
+    const currentHighestBid = auction.currentPrice || auction.startPrice;
 
     return(
         <div>
