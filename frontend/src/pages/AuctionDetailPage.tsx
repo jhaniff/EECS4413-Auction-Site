@@ -52,7 +52,7 @@ function AuctionDetailPage(){
 
             <button
                 onClick={() =>
-                    (window.location.href = `/payment/${auctionId}`)
+                    window.location.href = `/auction/${auctionId}/payment`
                 }
             >Proceed to payment</button>
         </div>
