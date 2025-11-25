@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { placePayment } from "../api/paymentAPI";
 import { useState, useEffect} from "react";
+import "../styles/auctionStyles.css";
+
 function PaymentPage(){
      const { id } = useParams();
      const auctionID = id;
@@ -21,7 +23,8 @@ function PaymentPage(){
             .then(winnerInfo => {
                 setWinner(winnerInfo);
             })
-         }, [id]);
+     }, [id]);
+
      async function handlePayment(paymentInfo){
            const expiryDateISO = new Date(paymentInfo.expiryDate).toISOString();
            const fullPaymentPayload = {
@@ -33,38 +36,37 @@ function PaymentPage(){
                securityCode: paymentInfo.securityCode,
                expedited: paymentInfo.expeditedShipping
            };
-           //console.log("Payment Payload:", fullPaymentPayload);
            const response = await placePayment(fullPaymentPayload);
            if(response?.paymentID){
                navigate(`/payment/${response.paymentID}/receipt`);
-               }
-           console.log("Backend response: ", response);
+           }
      }
 
     return(
-        <div style={{display: "flex", gap: "850px"}}>
-            <div>
-                <h2>Winning Bidder</h2>
+        <div className="payment-layout">
+            <div className="payment-section">
+                <h2 className="section-heading">Winning Bidder</h2>
                 {!winner ?(
-                    <p>Fetching winner info.  </p>
+                    <p>Fetching winner info.</p>
                 ):(
                     <>
-                    <p>First Name: {winner.firstName}</p>
-                    <p>Last Name: {winner.lastName}</p>
-                    <p>Street Name: {winner.streetName}</p>
-                    <p>Street Number: {winner.streetNumber}</p>
-                    <p>City: {winner.city}</p>
-                    <p>Country: {winner.country}</p>
-                    <p>Postal Code: {winner.postalCode}</p>
-                    <p>Total Cost: {auction.currentPrice}</p>
+                    <p className="info-line">First Name: {winner.firstName}</p>
+                    <p className="info-line">Last Name: {winner.lastName}</p>
+                    <p className="info-line">Street Name: {winner.streetName}</p>
+                    <p className="info-line">Street Number: {winner.streetNumber}</p>
+                    <p className="info-line">City: {winner.city}</p>
+                    <p className="info-line">Country: {winner.country}</p>
+                    <p className="info-line">Postal Code: {winner.postalCode}</p>
+                    <p className="info-line">Total Cost: {auction.currentPrice}</p>
                     </>
-                   )}
+                )}
             </div>
-            <div>
-                <h2>Credit Card</h2>
+
+            <div className="payment-section">
+                <h2 className="section-heading">Credit Card</h2>
                 <PaymentForm onSubmitPayment={handlePayment}/>
             </div>
         </div>
-        );
-    }
+    );
+}
 export default PaymentPage;
