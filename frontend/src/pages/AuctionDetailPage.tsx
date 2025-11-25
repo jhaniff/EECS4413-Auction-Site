@@ -22,7 +22,7 @@ function AuctionDetailPage(){
     return(
         <div>
             <h2>{auction.itemName}</h2>
-            <p>Starting Price: {auction.startingPrice}</p>
+            <p>Starting Price: {auction.startPrice}</p>
             <p>Highest Bid: {currentHighestBid}</p>
 
             <BidForm auctionId={auctionId} currentHighestBid={currentHighestBid}/>
