@@ -21,7 +21,7 @@ function AuctionDetailPage(){
         const now = Date.now();
         const diff = end - now;
         if(diff <= 0){
-          setRemaining("Ended");
+          setRemaining("Auction has ended");
           return;
         }
         const hours = Math.floor(diff / 3600000);
