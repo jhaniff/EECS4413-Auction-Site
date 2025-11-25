@@ -23,17 +23,19 @@ function BidForm({auctionId, currentHighestBid}) {
         if(result.newHighestBid){
             setAmount("");
         }
-      }
-  return (
-    <form onSubmit={handleSubmit}>
-        <h2>Bid Amount:</h2>
-        <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-         />
-        <button type="submit">Submit Bid</button>
-    </form>
-  );
+    }
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <h2>Bid Amount:</h2>
+            <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+            />
+            <button type="submit">Submit Bid</button>
+            {message && <p>{message}</p>}
+        </form>
+    );
 }
 export default BidForm;
