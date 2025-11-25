@@ -52,7 +52,7 @@ function AuctionDetailPage(){
 
             <button
                 onClick={() => {
-                    const userId = Number(localStorage.getItem("userId"));
+                    const userId = Number(localStorage.getItem("userId")); // Change for when we've authentication service.  
                     if(userId !== auction.highestBidderId){
                         alert("Only the winner of the auction can proceed to payment.");
                         return;
