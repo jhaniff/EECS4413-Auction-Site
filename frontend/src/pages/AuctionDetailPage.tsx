@@ -1,6 +1,7 @@
 import BidForm from "../components/BidForm";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from 'react';
+import "../styles/auctionStyles.css";
 
 function AuctionDetailPage(){
     const { id } = useParams();
@@ -36,23 +37,25 @@ function AuctionDetailPage(){
     }, [auction]);
 
     if(!auction){
-        return <p>One moment please...</p>;
+        return <p className="center-text">One moment please...</p>;
     }
 
     const currentHighestBid = auction.currentPrice || auction.startPrice;
 
     return(
-        <div>
-            <h2>{auction.itemName}</h2>
-            <p>Starting Price: {auction.startPrice}</p>
-            <p>Highest Bid: {currentHighestBid}</p>
-            <p>Time Remaining: {remaining}</p>
+        <div className="auction-container">
+            <h2 className="auction-title">{auction.itemName}</h2>
+
+            <p className="label-row">Starting Price: ${auction.startPrice}</p>
+            <p className="label-row">Highest Bid: ${currentHighestBid}</p>
+            <p className="label-row">Time Remaining: {remaining}</p>
 
             <BidForm auctionId={auctionId} currentHighestBid={currentHighestBid}/>
 
             <button
+                className="button-primary"
                 onClick={() => {
-                    const userId = Number(localStorage.getItem("userId")); // Change for when we've authentication service.  
+                    const userId = Number(localStorage.getItem("userId"));
                     if(userId !== auction.highestBidderId){
                         alert("Only the winner of the auction can proceed to payment.");
                         return;
