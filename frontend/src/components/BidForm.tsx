@@ -5,11 +5,7 @@ function BidForm({auctionId, currentHighestBid}) {
     const [amount, setAmount] = useState("");
     const [message, setMessage] = useState("");
 
-      function handleChange(e) {
-        setAmount(e.target.value);
-      }
-
-      async function handleSubmit(e) {
+    async function handleSubmit(e) {
         e.preventDefault();
         const bidAmount = Number(amount);
         if(bidAmount <= currentHighestBid){
