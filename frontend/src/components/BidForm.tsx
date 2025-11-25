@@ -11,7 +11,7 @@ function BidForm({auctionId, currentHighestBid}) {
 
       async function handleSubmit(e) {
         e.preventDefault();
-        const bidAmount = Number(amount)
+        const bidAmount = Number(amount);
         if(bidAmount <= currentHighestBid){
             setMessage(`Your bid must be larger than $${currentHighestBid}`);
             return;
