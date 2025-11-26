@@ -28,7 +28,7 @@ function AuthPage() {
     <div className="auth-page">
       <Link to="/" className="auth-back-link">
         <span aria-hidden="true">&larr;</span>
-        <span>Bac1k to landing</span>
+        <span>Back to landing</span>
       </Link>
       <div className="auth-card">
         <h1 className="auth-title">Auction Platform</h1>

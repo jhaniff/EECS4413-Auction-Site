@@ -1,5 +1,7 @@
 import { API_BASE_URL } from './config';
 
+const NORMALIZED_BASE = API_BASE_URL.replace(/\/+$/, '');
+
 export type SortDirection = 'asc' | 'desc';
 
 export interface AuctionSummary {
@@ -34,6 +36,18 @@ export interface AuctionSearchParams {
   signal?: AbortSignal;
 }
 
+export interface UserBidSummary {
+  auctionId: number;
+  itemId: number;
+  itemName: string;
+  currentPrice: number;
+  userBidAmount: number;
+  status: string;
+  winning: boolean;
+  endsAt: string;
+  lastBidAt: string;
+}
+
 interface SpringPage<T> {
   content?: T[];
   number?: number;
@@ -49,7 +63,7 @@ function buildSearchUrl({
   sortBy = 'endsAt',
   direction = 'asc',
 }: AuctionSearchParams): string {
-  const url = new URL('/auction/search', API_BASE_URL);
+  const url = new URL('/api/auction/search', NORMALIZED_BASE);
   url.searchParams.set('query', query.trim());
   url.searchParams.set('page', page.toString());
   url.searchParams.set('size', size.toString());
@@ -97,11 +111,25 @@ export async function fetchAuctionDetail(
   auctionId: number,
   signal?: AbortSignal,
 ): Promise<AuctionDetail> {
-  const response = await fetch(`${API_BASE_URL}/auction/${auctionId}`, { signal });
+  const response = await fetch(`${NORMALIZED_BASE}/api/auction/${auctionId}`, {
+    signal,
+  });
 
   if (!response.ok) {
     throw new Error(`Auction ${auctionId} is unavailable right now.`);
   }
 
   return response.json() as Promise<AuctionDetail>;
+}
+
+export async function fetchUserBids(signal?: AbortSignal): Promise<UserBidSummary[]> {
+  const response = await fetch(`${NORMALIZED_BASE}/api/auction/my-bids`, {
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error('Unable to load your bids right now. Please try again.');
+  }
+
+  return response.json() as Promise<UserBidSummary[]>;
 }

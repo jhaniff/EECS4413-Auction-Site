@@ -17,7 +17,7 @@ function LandingPage() {
     <div className="landing-page">
       <header className="landing-header">
         <div className="landing-brand">
-          <span className="brand-mark" />
+          <img src="/vite.svg" alt="BidSphere logo" className="brand-mark" />
           <p>
             Bid<span>Sphere</span>
           </p>
@@ -52,9 +52,6 @@ function LandingPage() {
               <button type="button" className="primary-link" onClick={handleBrowseCatalogue}>
                 Browse catalogue
               </button>
-              <Link to="/auth" className="ghost-link">
-                Sign in to bid
-              </Link>
             </div>
           </div>
           <div className="hero-highlights" aria-label="Key platform features">

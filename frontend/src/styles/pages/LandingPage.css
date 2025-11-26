@@ -29,12 +29,17 @@
 }
 
 .brand-mark {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
+  display: inline-block;
   border-radius: 12px;
-  background: linear-gradient(135deg, #0ea5e9, #22d3ee);
-  box-shadow: 0 10px 25px rgba(14, 165, 233, 0.35);
-  display: inline-flex;
+  box-shadow: 0 10px 25px rgba(14, 165, 233, 0.25);
+  padding: 4px;
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.brand-mark {
+  object-fit: contain;
 }
 
 .landing-nav {

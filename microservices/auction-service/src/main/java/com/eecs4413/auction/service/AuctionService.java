@@ -1,6 +1,26 @@
 package com.eecs4413.auction.service;
 
-import com.eecs4413.auction.dto.*;
+import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+
+import com.eecs4413.auction.dto.AuctionDTO;
+import com.eecs4413.auction.dto.AuctionDetailDTO;
+import com.eecs4413.auction.dto.AuctionResultDTO;
+import com.eecs4413.auction.dto.BidRequestDTO;
+import com.eecs4413.auction.dto.BidResponseDTO;
+import com.eecs4413.auction.dto.UserBidSummaryDTO;
 import com.eecs4413.auction.exception.DatabaseOperationException;
 import com.eecs4413.auction.exception.InvalidBidException;
 import com.eecs4413.auction.exception.ResourceNotFoundException;
@@ -10,15 +30,8 @@ import com.eecs4413.auction.model.User;
 import com.eecs4413.auction.repository.AuctionRepository;
 import com.eecs4413.auction.repository.BidRepository;
 import com.eecs4413.auction.repository.UserRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.OffsetDateTime;
+import jakarta.transaction.Transactional;
 
 @Service
 public class AuctionService {
@@ -157,5 +170,52 @@ public class AuctionService {
         long hours = remaining.toHours();
         long minutes = remaining.toMinutesPart();
         return String.format("%dh %02dm", hours, minutes);
+    }
+
+    public List<UserBidSummaryDTO> getUserBidSummaries(Long userId) {
+        List<Bid> userBids = bidRepository.findBidsWithAuctionDetailsByBidderId(userId);
+
+        Map<Long, List<Bid>> bidsByAuction = userBids.stream()
+                .collect(Collectors.groupingBy(bid -> bid.getAuction().getAuctionId()));
+
+        List<UserBidSummaryDTO> summaries = new ArrayList<>();
+
+        for (List<Bid> auctionBids : bidsByAuction.values()) {
+            Bid representative = auctionBids.get(0);
+            Auction auction = representative.getAuction();
+
+            boolean isEnded = "ENDED".equalsIgnoreCase(auction.getStatus());
+            boolean userWinning = auction.getHighestBidder() != null &&
+                    Objects.equals(auction.getHighestBidder().getUserId(), userId);
+
+            if (isEnded && !userWinning) {
+                continue;
+            }
+
+            int userBidAmount = auctionBids.stream()
+                    .mapToInt(Bid::getAmount)
+                    .max()
+                    .orElse(0);
+
+            OffsetDateTime lastBidAt = auctionBids.stream()
+                    .map(Bid::getPlacedAt)
+                    .max(OffsetDateTime::compareTo)
+                    .orElse(representative.getPlacedAt());
+
+            summaries.add(UserBidSummaryDTO.builder()
+                    .auctionId(auction.getAuctionId())
+                    .itemId(auction.getItem().getItemId())
+                    .itemName(auction.getItem().getName())
+                    .currentPrice(auction.getCurrentPrice())
+                    .userBidAmount(userBidAmount)
+                    .status(auction.getStatus())
+                    .winning(userWinning)
+                    .endsAt(auction.getEndsAt())
+                    .lastBidAt(lastBidAt)
+                    .build());
+        }
+
+        summaries.sort(Comparator.comparing(UserBidSummaryDTO::getEndsAt));
+        return summaries;
     }
 }

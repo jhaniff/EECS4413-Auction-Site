@@ -1,6 +1,8 @@
-// All authentication endpoints are exposed under /api/auth on port 8080
-// e.g. POST http://localhost:8080/api/auth/login
-const API_BASE = 'http://localhost:8080/api/auth';
+import { API_BASE_URL } from './config';
+
+// Ensure we never end up with duplicate slashes when composing URLs
+const NORMALIZED_BASE = API_BASE_URL.replace(/\/+$/, '');
+const API_BASE = `${NORMALIZED_BASE}/api/auth`;
 
 export interface AuthResponse {
   accessToken: string;
@@ -83,7 +85,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
 // POST /api/auth/login
 export async function signIn(request: SignInRequest): Promise<AuthResponse> {
-  const res = await fetch(`${API_BASE_URL}/login`, {
+  const res = await fetch(`${API_BASE}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),
@@ -121,7 +123,7 @@ export async function registerUser(
 export async function requestPasswordReset(
   request: ForgotPasswordRequest,
 ): Promise<void> {
-  const res = await fetch(`${API_BASE_URL}/forgot`, {
+  const res = await fetch(`${API_BASE}/forgot`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request), // { email }

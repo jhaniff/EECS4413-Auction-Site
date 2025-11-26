@@ -47,6 +47,20 @@ const isStrongPassword = (password: string): boolean => {
   return PASSWORD_REGEX.test(password);
 };
 
+const getFriendlyErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof Error) {
+    const raw = error.message?.toLowerCase() ?? '';
+    if (raw.includes('failed to fetch') || raw.includes('network')) {
+      return 'Unable to reach the server. Please check your internet connection and try again.';
+    }
+    if (raw.includes('timeout')) {
+      return 'The request timed out. Please try again shortly.';
+    }
+    return error.message || fallback;
+  }
+  return fallback;
+};
+
 function SignUpForm({ onSignedUp }: SignUpFormProps) {
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -290,11 +304,12 @@ function SignUpForm({ onSignedUp }: SignUpFormProps) {
       setSuccessMessage('Account created successfully! You can now sign in.');
       if (onSignedUp) onSignedUp();
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setFormError(err.message);
-      } else {
-        setFormError('Failed to sign up. Please try again.');
-      }
+      setFormError(
+        getFriendlyErrorMessage(
+          err,
+          'We could not create your account. Please review the form and try again.',
+        ),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -317,6 +332,7 @@ function SignUpForm({ onSignedUp }: SignUpFormProps) {
               touched.email && errors.email ? 'auth-input-error' : ''
             }`}
             value={email}
+            placeholder="you@example.com"
             onChange={handleChange('email')}
             onBlur={handleBlur('email')}
           />
@@ -336,6 +352,7 @@ function SignUpForm({ onSignedUp }: SignUpFormProps) {
               touched.firstName && errors.firstName ? 'auth-input-error' : ''
             }`}
             value={firstName}
+            placeholder="Jane"
             onChange={handleChange('firstName')}
             onBlur={handleBlur('firstName')}
           />
@@ -355,6 +372,7 @@ function SignUpForm({ onSignedUp }: SignUpFormProps) {
               touched.lastName && errors.lastName ? 'auth-input-error' : ''
             }`}
             value={lastName}
+            placeholder="Doe"
             onChange={handleChange('lastName')}
             onBlur={handleBlur('lastName')}
           />
@@ -377,6 +395,7 @@ function SignUpForm({ onSignedUp }: SignUpFormProps) {
                   : ''
               }`}
               value={streetNumber}
+              placeholder="123"
               onChange={handleChange('streetNumber')}
               onBlur={handleBlur('streetNumber')}
             />
@@ -397,6 +416,7 @@ function SignUpForm({ onSignedUp }: SignUpFormProps) {
                   : ''
               }`}
               value={streetName}
+              placeholder="Main St"
               onChange={handleChange('streetName')}
               onBlur={handleBlur('streetName')}
             />
@@ -415,6 +435,7 @@ function SignUpForm({ onSignedUp }: SignUpFormProps) {
                 touched.city && errors.city ? 'auth-input-error' : ''
               }`}
               value={city}
+              placeholder="Toronto"
               onChange={handleChange('city')}
               onBlur={handleBlur('city')}
             />
@@ -433,6 +454,7 @@ function SignUpForm({ onSignedUp }: SignUpFormProps) {
                 touched.country && errors.country ? 'auth-input-error' : ''
               }`}
               value={country}
+              placeholder="Canada"
               onChange={handleChange('country')}
               onBlur={handleBlur('country')}
             />
@@ -453,6 +475,7 @@ function SignUpForm({ onSignedUp }: SignUpFormProps) {
                   : ''
               }`}
               value={postalCode}
+              placeholder="A1B 2C3"
               onChange={handleChange('postalCode')}
               onBlur={handleBlur('postalCode')}
             />
@@ -473,6 +496,7 @@ function SignUpForm({ onSignedUp }: SignUpFormProps) {
               touched.password && errors.password ? 'auth-input-error' : ''
             }`}
             value={password}
+            placeholder="Create a password"
             onChange={handleChange('password')}
             onBlur={handleBlur('password')}
           />
@@ -494,6 +518,7 @@ function SignUpForm({ onSignedUp }: SignUpFormProps) {
                 : ''
             }`}
             value={confirmPassword}
+            placeholder="Re-enter password"
             onChange={handleChange('confirmPassword')}
             onBlur={handleBlur('confirmPassword')}
           />

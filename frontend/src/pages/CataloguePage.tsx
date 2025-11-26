@@ -34,9 +34,6 @@ const PRICE_RANGE_OPTIONS: PriceRangeOption[] = [
   { id: 'over-5k', label: '$5,000 and up', min: 5000 },
 ];
 
-const SHIP_DATE_MIN = '2020-01-01';
-const SHIP_DATE_MAX = '2100-12-31';
-
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
@@ -57,6 +54,29 @@ interface DerivedAuction extends AuctionSummary {
   auctionTypeLabel: string;
   bidsCount: number;
 }
+
+const getCatalogueErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    const message = error.message.trim();
+    const normalized = message.toLowerCase();
+
+    if (normalized.includes('failed to fetch') || normalized.includes('network')) {
+      return 'We could not reach the auction service. Check your connection and try again.';
+    }
+
+    if (normalized.includes('timeout')) {
+      return 'The auction service is taking longer than expected. Please retry in a moment.';
+    }
+
+    if (!message) {
+      return 'Something went wrong while loading auctions. Please try again.';
+    }
+
+    return message;
+  }
+
+  return 'Something went wrong while loading auctions. Please try again.';
+};
 
 function decodeJwtSubject(token: string | null) {
   if (!token) return null;
@@ -136,7 +156,6 @@ function CataloguePage() {
   const [typeFilter, setTypeFilter] = useState(DEFAULT_TYPE_FILTER);
   const [sortPreset, setSortPreset] = useState<string>(SORT_PRESETS[0].id);
   const [priceRange, setPriceRange] = useState<string>(PRICE_RANGE_OPTIONS[0].id);
-  const [shipByDate, setShipByDate] = useState('');
   const [page, setPage] = useState(0);
   const [auctions, setAuctions] = useState<AuctionSummary[]>([]);
   const [totalPages, setTotalPages] = useState(0);
@@ -159,6 +178,10 @@ function CataloguePage() {
   useEffect(() => {
     setPage(0);
   }, [debouncedSearch, sortPreset]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [typeFilter, priceRange]);
 
   const activeSortOption = useMemo(() => {
     return SORT_PRESETS.find((option) => option.id === sortPreset) ?? SORT_PRESETS[0];
@@ -210,7 +233,7 @@ function CataloguePage() {
         if (controller.signal.aborted) {
           return;
         }
-        setError(err instanceof Error ? err.message : 'Unable to load auctions right now.');
+        setError(getCatalogueErrorMessage(err));
         setAuctions([]);
         setTotalElements(0);
         setTotalPages(0);
@@ -281,15 +304,6 @@ function CataloguePage() {
   const filteredAuctions = useMemo(() => {
     const priceMin = selectedPriceRange.min;
     const priceMax = selectedPriceRange.max;
-    let shipLimit: Date | null = null;
-
-    if (shipByDate) {
-      const parsed = new Date(shipByDate);
-      if (!Number.isNaN(parsed.getTime())) {
-        parsed.setHours(23, 59, 59, 999);
-        shipLimit = parsed;
-      }
-    }
 
     return derivedAuctions.filter((auction) => {
       if (typeFilter !== DEFAULT_TYPE_FILTER && auction.type !== typeFilter) {
@@ -305,19 +319,9 @@ function CataloguePage() {
         return false;
       }
 
-      if (shipLimit) {
-        if (!auction.endsAt) {
-          return false;
-        }
-        const endsAtDate = new Date(auction.endsAt);
-        if (!Number.isFinite(endsAtDate.getTime()) || endsAtDate > shipLimit) {
-          return false;
-        }
-      }
-
       return true;
     });
-  }, [derivedAuctions, typeFilter, selectedPriceRange, shipByDate]);
+  }, [derivedAuctions, typeFilter, selectedPriceRange]);
 
   useEffect(() => {
     if (selectedAuctionId === null) {
@@ -330,8 +334,8 @@ function CataloguePage() {
   }, [filteredAuctions, selectedAuctionId]);
 
   const heroStats = useMemo(() => {
-    const closingSoon = filteredAuctions.filter((auction) => auction.status === 'ending').length;
-    const highestBid = filteredAuctions.reduce(
+    const closingSoon = derivedAuctions.filter((auction) => auction.status === 'ending').length;
+    const highestBid = derivedAuctions.reduce(
       (max, auction) => Math.max(max, auction.currentPrice ?? 0),
       0,
     );
@@ -341,7 +345,7 @@ function CataloguePage() {
       closingSoon,
       highestBid,
     };
-  }, [filteredAuctions, totalElements]);
+  }, [derivedAuctions, totalElements]);
 
   const showLoadingState = loading && filteredAuctions.length === 0 && !error;
   const showEmptyState = !loading && !error && filteredAuctions.length === 0;
@@ -362,55 +366,6 @@ function CataloguePage() {
 
   const handlePriceChange = (event: ChangeEvent<HTMLSelectElement>) => {
     setPriceRange(event.target.value);
-  };
-
-  const handleShipDateChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    if (!value) {
-      setShipByDate('');
-      return;
-    }
-
-    const [year, month, day] = value.split('-').map((segment) => Number.parseInt(segment, 10));
-    const isValidDate =
-      Number.isInteger(year) &&
-      Number.isInteger(month) &&
-      Number.isInteger(day) &&
-      year >= Number.parseInt(SHIP_DATE_MIN.slice(0, 4), 10) &&
-      year <= Number.parseInt(SHIP_DATE_MAX.slice(0, 4), 10) &&
-      month >= 1 &&
-      month <= 12 &&
-      day >= 1 &&
-      day <= 31;
-
-    if (!isValidDate) {
-      setShipByDate('');
-      return;
-    }
-
-    const candidate = new Date(value);
-    if (Number.isNaN(candidate.getTime())) {
-      setShipByDate('');
-      return;
-    }
-
-    if (candidate.getDate() !== day) {
-      setShipByDate('');
-      return;
-    }
-
-    const minDate = new Date(SHIP_DATE_MIN);
-    const maxDate = new Date(SHIP_DATE_MAX);
-    if (candidate < minDate || candidate > maxDate) {
-      setShipByDate('');
-      return;
-    }
-
-    setShipByDate(value);
-  };
-
-  const clearShipDate = () => {
-    setShipByDate('');
   };
 
   const handleSelectAuction = (auctionId: number) => {
@@ -464,7 +419,9 @@ function CataloguePage() {
     <div className="catalogue-page">
       <header className="catalogue-header">
         <div className="catalogue-brand">
-          <span className="brand-mark">AP</span>
+          <div className="brand-mark">
+            <img src="/vite.svg" alt="Auction Platform icon" />
+          </div>
           <div>
             <p className="brand-title">Auction Platform</p>
             <span className="brand-tagline">Live marketplace</span>
@@ -554,7 +511,7 @@ function CataloguePage() {
 
           <div className="filter-group">
             <label className="filter-label" htmlFor="filter-price">
-              Price range
+              Current bid range
             </label>
             <select id="filter-price" value={priceRange} onChange={handlePriceChange}>
               {PRICE_RANGE_OPTIONS.map((option) => (
@@ -563,27 +520,6 @@ function CataloguePage() {
                 </option>
               ))}
             </select>
-          </div>
-
-          <div className="filter-group date-filter">
-            <label className="filter-label" htmlFor="filter-ship-date">
-              Ship by
-            </label>
-            <div className="date-filter__controls">
-              <input
-                id="filter-ship-date"
-                type="date"
-                value={shipByDate}
-                min={SHIP_DATE_MIN}
-                max={SHIP_DATE_MAX}
-                onChange={handleShipDateChange}
-              />
-              {shipByDate && (
-                <button type="button" className="clear-date" onClick={clearShipDate}>
-                  Clear
-                </button>
-              )}
-            </div>
           </div>
         </div>
       </section>
