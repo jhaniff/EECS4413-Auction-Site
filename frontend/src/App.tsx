@@ -1,16 +1,17 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/auth/AuthPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
-import CataloguePage from './pages/CataloguePage'; // simple placeholder for after login
-import './App.css';
+import CataloguePage from './pages/CataloguePage';
+import './styles/app/App.css';
 
 function App() {
   return (
     <div className="app-container">
       <Routes>
-        {/* default: go to /auth */}
-        <Route path="/" element={<Navigate to="/auth" replace />} />
+        {/* landing */}
+        <Route path="/" element={<LandingPage />} />
 
         {/* auth flows */}
         <Route path="/auth" element={<AuthPage />} />
@@ -21,7 +22,7 @@ function App() {
         <Route path="/catalogue" element={<CataloguePage />} />
 
         {/* fallback */}
-        <Route path="*" element={<div>Page not found</div>} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
   );

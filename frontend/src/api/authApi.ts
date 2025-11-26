@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8080'; 
+import { API_BASE_URL } from './config';
 
 export interface AuthResponse {
   accessToken: string;
@@ -73,7 +73,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
 
 export async function signIn(request: SignInRequest): Promise<AuthResponse> {
-  const res = await fetch(`${API_BASE}/login`, {
+  const res = await fetch(`${API_BASE_URL}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),
@@ -82,7 +82,7 @@ export async function signIn(request: SignInRequest): Promise<AuthResponse> {
 }
 
 export async function registerUser(request: RegisterRequest): Promise<AuthResponse> {
-  const res = await fetch(`${API_BASE}/register`, {
+  const res = await fetch(`${API_BASE_URL}/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),
@@ -93,7 +93,7 @@ export async function registerUser(request: RegisterRequest): Promise<AuthRespon
 export async function requestPasswordReset(
   request: ForgotPasswordRequest,
 ): Promise<void> {
-  const res = await fetch(`${API_BASE}/forgot`, {
+  const res = await fetch(`${API_BASE_URL}/forgot`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request), // { email }
@@ -102,7 +102,7 @@ export async function requestPasswordReset(
 }
 
 export async function resetPassword(request: ResetPasswordRequest): Promise<void> {
-  const res = await fetch(`${API_BASE}/forgot/reset`, {
+  const res = await fetch(`${API_BASE_URL}/forgot/reset`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request), // { uuid, code, newPassword }
