@@ -1,6 +1,7 @@
+
 # EECS 4413 Auction Platform – Runbook (Microservices Deployment)
 
-_Last updated: 2025-11-22_  
+_Last updated: 2025-11-26_  
 _Owners: Joshua Hanif, Farah Madkour, George Yousif, Sandeepon Saha, Matthew Patrus_
 
 ---
@@ -17,38 +18,41 @@ This runbook describes how to deploy, start, stop, monitor, and troubleshoot the
 
 ### 1.2 System Description
 
-The Auction Platform is a web-based system that allows users to:
+The Auction Platform allows authenticated users to:
 
-- Register and sign in.  
-- Browse a catalogue of items.  
-- Place bids in online auctions.  
-- Pay for won auctions.  
-- Arrange shipping for purchased items.
+- Register, sign in, and reset their password via email links captured by Mailhog.  
+- Browse active auctions in the catalogue view.  
+- Sell items (which automatically spin up matching auctions).  
+- Place bids in real time and review their bidding history.  
+- Initiate payment flows for completed auctions.
 
-The system is composed of the following components:
+The deployed stack uses the following components:
 
-- **API Gateway / Web Frontend** – single entry point for browsers; routes API calls to backend services and serves the UI.
-- **User Service** – user registration, login, authentication, 2FA.  
-- **Auction Service** – auctions, bids, auction statuses, winners.  
-- **Catalogue Service** – item metadata and keyword-based search.  
-- **Payment Service** – payment summary and payment processing.  
-- **Shipping Service** – shipping estimates and shipment records.  
-- **Per-service databases** – one database per microservice.
+- **Service Registry (Eureka)** – central registry for service discovery and health.  
+- **API Gateway** – single entry point exposed on `:8080`; terminates JWT auth and routes to downstream services.  
+- **Authentication Service** – user accounts, JWT issuance/validation, forgot-password flows.  
+- **Auction Service** – auction search, detail, bid placement, user bid summaries.  
+- **Item Service** – item onboarding and automatic auction creation.  
+- **Payment Service** – payment records (mocked provider).  
+- **PostgreSQL** – shared database used by all Spring Boot services via schema/tables.  
+- **Mailhog** – SMTP sink used for password reset emails.
 
-All services communicate via HTTP/REST. Each service persists its own data in a dedicated database.
+All backend services are Spring Boot applications that communicate over HTTP using the gateway. Each service registers with Eureka for lookup, and they all share a single Postgres instance configured through a common `.env` file.
 
-### 1.3 Microservice Overview
+### 1.3 Microservice Inventory
 
-| Service            | Description                                          | Example Port | Example Container Name |
-|--------------------|------------------------------------------------------|--------------|------------------------|
-| API Gateway        | Entry point, routing, serves UI                      | 8080         | `api-gateway`          |
-| User Service       | Users, auth, 2FA                                     | 8081         | `user-service`         |
-| Auction Service    | Auctions, bids, winners                              | 8082         | `auction-service`      |
-| Catalogue Service  | Item catalogue, search                               | 8083         | `catalogue-service`    |
-| Payment Service    | Totals, payment processing, receipts                 | 8084         | `payment-service`      |
-| Shipping Service   | Shipping options and shipment records                | 8085         | `shipping-service`     |
+| Service              | Description                                      | Port | Container |
+|----------------------|--------------------------------------------------|------|-----------|
+| Service Registry     | Eureka discovery UI & heartbeat hub              | 8761 | `eureka-server` |
+| API Gateway          | Browser entry point, JWT validation, routing     | 8080 | `api-gateway` |
+| AuthenticationSvc    | Register/login/logout, token validation, forgot password | 8084 | `authentication-service` |
+| Auction Service      | Auction search/detail, bidding, user bid reports | 8081 | `auction-service` |
+| Item Service         | Item CRUD and automatic auction bootstrapping    | 8083 | `item-service` |
+| Payment Service      | Payment summaries and status tracking            | 8082 | `payment-service` |
+| PostgreSQL           | Persistent storage for all services              | 5432 | `postgres` |
+| Mailhog              | Test SMTP + web UI for emails                    | 8025 | `mailhog` |
 
-Edit ports and names above to match your actual `docker-compose.yml`.
+Only the API Gateway and Eureka UI are meant to be accessed directly from the host machine; the other service ports are published primarily for debugging.
 
 ---
 
@@ -56,155 +60,129 @@ Edit ports and names above to match your actual `docker-compose.yml`.
 
 ### 2.1 Environments
 
-For this project, a single **local/demo** environment is assumed.
+This runbook targets the single **local/demo** environment described in `microservices/docker-compose.yml`.
 
 - **Environment name:** `local`  
-- **Host:** `localhost` or VM IP provided by TA  
-- **Docker orchestration:** `docker-compose` (single host)
+- **Host:** `localhost` (or your VM IP)  
+- **Orchestration:** Docker Compose (single host)
 
 ### 2.2 Base URLs
 
-- **Web UI & API Gateway:**  
-  - `http://localhost:8080` (adjust port if needed)
+- **Gateway + Web UI:** `http://localhost:8080`
+- **Eureka Dashboard:** `http://localhost:8761`
+- **Mailhog UI:** `http://localhost:8025` (SMTP port `1025`)
+- **Dev Frontend (Vite during local dev):** `http://localhost:5173`
 
-Through the gateway, the following logical paths are exposed (example):
+Gateway routing of interest:
 
-- `/api/users/**` → User Service  
-- `/api/auctions/**` → Auction Service  
-- `/api/catalogue/**` → Catalogue Service  
-- `/api/payments/**` → Payment Service  
-- `/api/shipping/**` → Shipping Service  
+- `/api/auth/**` → Authentication Service
+- `/api/auction/**` → Auction Service
+- `/api/items/**` → Item Service
+- `/api/payments/**` → Payment Service
 
-If you implement health endpoints, typical URLs might be:
-
-- `GET http://localhost:8080/actuator/health` – gateway health  
-- `GET http://localhost:8081/actuator/health` – user-service health  
-- `GET http://localhost:8082/actuator/health` – auction-service health  
-- etc.
+When health endpoints are enabled, use `GET http://localhost:<port>/actuator/health` for each service (see §7).
 
 ---
 
 ## 3. Services
 
-This section describes each service, its purpose, port, database, and dependencies. Update port numbers and names to match your implementation.
+### 3.1 Service Registry (Eureka)
 
-### 3.1 API Gateway / Web Frontend
+- **Purpose**: Provides service discovery and live status, required before other services join the cluster.  
+- **Tech stack**: Spring Boot / Netflix Eureka.  
+- **Port**: `8761` (UI available via browser).  
+- **Container**: `eureka-server`.  
+- **Depends on**: None.
 
-- **Purpose**
-  - Entry point for all browser traffic.
-  - Serves HTML/CSS/JS for the UI (login, catalogue, bidding, payment).
-  - Routes API calls to downstream services.
-  - Central place for authentication and cross-cutting concerns.
-- **Tech stack:** {{Java/Spring Boot/Node.js/etc.}}  
-- **Container name (example):** `api-gateway`  
-- **Port:** `8080`  
-- **Depends on:** User, Auction, Catalogue, Payment, Shipping services.
+### 3.2 API Gateway
 
-### 3.2 User Service
+- **Purpose**: Terminates browser traffic, enforces JWT authentication, forwards REST calls to the correct downstream service, and proxies the Vite build output.  
+- **Port**: `8080`.  
+- **Container**: `api-gateway`.  
+- **Depends on**: Eureka, Authentication, Auction, Item, Payment services.
 
-- **Purpose**
-  - User registration and login.
-  - Authentication and (optionally) 2FA.
-  - Basic user profile and billing info.
-- **Tech stack:** {{Java/Spring Boot/etc.}}  
-- **Container name:** `user-service`  
-- **Port:** `8081`  
-- **Database:** `UserDB`  
-- **Depends on:** `UserDB`, optional Email provider.
+### 3.3 Authentication Service
 
-### 3.3 Auction Service
+- **Purpose**: Registration, login, logout, forgot/reset password, JWT validation endpoints, and propagation of `AuthenticatedUserId` headers used by downstream services.  
+- **Port**: `8084`.  
+- **Container**: `authentication-service`.  
+- **Depends on**: Eureka, PostgreSQL, Mailhog (SMTP).
 
-- **Purpose**
-  - Create and manage auctions.
-  - Accept and validate bids.
-  - Track auction state and determine winners.
-- **Container name:** `auction-service`  
-- **Port:** `8082`  
-- **Database:** `AuctionDB`  
-- **Depends on:** `AuctionDB`, User Service (for user validation).
+### 3.4 Auction Service
 
-### 3.4 Catalogue Service
+- **Purpose**: Manages auctions, exposes search/detail endpoints, handles bid placement, and produces the `/api/auction/my-bids` summary view.  
+- **Port**: `8081`.  
+- **Container**: `auction-service`.  
+- **Depends on**: Eureka, PostgreSQL, Authentication (for user validation).
 
-- **Purpose**
-  - Store item metadata (title, description, shipping days, etc.).
-  - Provide keyword-based search for the catalogue page.
-  - Provide details for an individual item.
-- **Container name:** `catalogue-service`  
-- **Port:** `8083`  
-- **Database:** `CatalogueDB`  
-- **Depends on:** `CatalogueDB`.
+### 3.5 Item Service
 
-### 3.5 Payment Service
+- **Purpose**: Handles seller onboarding (item metadata, shipping rules, keywords) and automatically creates a corresponding auction once an item is stored.  
+- **Port**: `8083`.  
+- **Container**: `item-service`.  
+- **Depends on**: Eureka, PostgreSQL, Authentication.
 
-- **Purpose**
-  - Generate payment summaries for won auctions.
-  - Process payments (using a mock or sandbox payment provider).
-  - Persist payment records and statuses.
-- **Container name:** `payment-service`  
-- **Port:** `8084`  
-- **Database:** `PaymentDB`  
-- **Depends on:** `PaymentDB`, Auction Service, User Service, external Payment Provider (mock).
+### 3.6 Payment Service
 
-### 3.6 Shipping Service
+- **Purpose**: Builds payment summaries, records mock payments, and reports payment status to other services.  
+- **Port**: `8082`.  
+- **Container**: `payment-service`.  
+- **Depends on**: Eureka, PostgreSQL.
 
-- **Purpose**
-  - Calculate shipping estimates for items.
-  - Create shipment records after successful payment.
-  - Store shipping addresses, tracking numbers, and shipment status.
-- **Container name:** `shipping-service`  
-- **Port:** `8085`  
-- **Database:** `ShippingDB`  
-- **Depends on:** `ShippingDB`, Payment Service, User Service, Auction Service, optional Carrier APIs.
+### 3.7 PostgreSQL
+
+- **Purpose**: Shared data store (`auction` database) accessed via JDBC URLs defined in the `.env`.  
+- **Port**: `5432` (mapped to host for debugging).  
+- **Container**: `postgres`.  
+- **Depends on**: Persistent Docker volume `postgres_data`.
+
+### 3.8 Mailhog
+
+- **Purpose**: Captures outbound email so password reset flows can be tested locally without external SMTP.  
+- **Ports**: SMTP `1025`, Web UI `8025`.  
+- **Container**: `mailhog`.  
+- **Depends on**: None.
 
 ---
 
 ## 4. Prerequisites
 
-Before deploying the system, ensure the following prerequisites are met.
-
 ### 4.1 Software
 
-- **Docker** and **docker-compose** installed.  
-- (Alternative, if not using Docker):  
-  - JDK {{17+}}  
-  - Maven or Gradle  
-  - Local installation of {{PostgreSQL/MySQL}}.
+- Docker Desktop (or Docker Engine) with Compose V2.  
+- Optional: Java 17+ and Maven if you want to run services outside Docker.  
+- Optional: Node.js 20+ / pnpm if you plan to run the Vite frontend separately.
 
 ### 4.2 Configuration
 
-Configuration may be provided via a `.env` file or environment variables in `docker-compose.yml`.
+All service configuration is driven by environment variables defined in `microservices/.env`. Sample values (current defaults):
 
-Typical values:
+```
+DB_URL=jdbc:postgresql://postgres:5432/auction
+DB_USERNAME=postgres
+DB_PASSWORD=<redacted>
+JWT_SECRET_KEY=your-jwt-secret
+FORGOT_PASSWORD_SECRET=reset-secret
+MAIL_HOST=mailhog
+MAIL_PORT=1025
+FRONTEND_URL=http://localhost:5173
+```
 
-- User Service
-  - `USER_DB_URL=jdbc:postgresql://user-db:5432/userdb`
-  - `USER_DB_USERNAME={{user}}`
-  - `USER_DB_PASSWORD={{password}}`
-- Auction Service
-  - `AUCTION_DB_URL=jdbc:postgresql://auction-db:5432/auctiondb`
-  - `AUCTION_DB_USERNAME={{user}}`
-  - `AUCTION_DB_PASSWORD={{password}}`
-- Catalogue Service
-  - `CATALOGUE_DB_URL=jdbc:postgresql://catalogue-db:5432/cataloguedb`
-  - `CATALOGUE_DB_USERNAME={{user}}`
-  - `CATALOGUE_DB_PASSWORD={{password}}`
-- Payment Service
-  - `PAYMENT_DB_URL=jdbc:postgresql://payment-db:5432/paymentdb`
-  - `PAYMENT_DB_USERNAME={{user}}`
-  - `PAYMENT_DB_PASSWORD={{password}}`
-  - `PAYMENT_PROVIDER_URL={{http://mock-payment-provider:port}}`
-- Shipping Service
-  - `SHIPPING_DB_URL=jdbc:postgresql://shipping-db:5432/shippingdb`
-  - `SHIPPING_DB_USERNAME={{user}}`
-  - `SHIPPING_DB_PASSWORD={{password}}`
+- `DB_*` values are shared by Authentication, Auction, Item, and Payment services.  
+- `JWT_SECRET_KEY` is used by the Authentication Service to sign tokens; keep this secret.  
+- `FORGOT_PASSWORD_SECRET` signs the forgot-password codes stored in the DB.  
+- `MAIL_HOST` / `MAIL_PORT` ensure emails are routed to Mailhog in local deployments.  
+- `FRONTEND_URL` is embedded in password reset emails so links open the React app.
 
-Common secrets (if used):
+Frontend-specific configuration lives under `frontend/.env` (committed defaults) or `frontend/.env.local` (developer overrides). The React app reads `VITE_*` variables at build time; the only required one today is:
 
-- `JWT_SECRET={{your-secret}}`  
-- `EMAIL_SMTP_HOST={{smtp.example.com}}`  
-- `EMAIL_SMTP_PORT={{587}}`  
+```
+VITE_API_BASE_URL=http://localhost:8080
+```
 
-Update as necessary for your project.
+This defaults to the gateway URL, so you only need to set it when pointing the UI at a different host/port.
+
+Copy `.env.example` to `.env` if one is provided, or edit the existing file with local secrets before running Compose.
 
 ---
 
@@ -214,119 +192,140 @@ Update as necessary for your project.
 
 ```bash
 git clone https://github.com/jhaniff/EECS4413-Auction-Site.git
-cd /auction-platform - (For SpringBoot Sevice)
-cd /frontend - (For React App)
+cd EECS4413-Auction-Site
 ```
 
-### 5.2 Build Docker Images
+### 5.2 Configure Environment
 
-If using `docker-compose` with build sections:
+```bash
+cd microservices
+cp .env.example .env   # if example exists; otherwise edit .env directly
+```
 
-    docker-compose build
+Fill in the `.env` values described in §4.2. The Compose stack reads this file automatically.
 
-Or build individual service images (example):
+### 5.3 Build Docker Images
 
-    docker build -t user-service ./user-service
-    docker build -t auction-service ./auction-service
-    docker build -t catalogue-service ./catalogue-service
-    docker build -t payment-service ./payment-service
-    docker build -t shipping-service ./shipping-service
-    docker build -t api-gateway ./api-gateway
+From the `microservices` directory:
 
-Update image names and paths to match your actual project structure.
+```bash
+docker compose build
+```
 
-### 5.3 Start All Services
+This compiles each Spring Boot service and creates the following images: `eureka-server`, `api-gateway`, `authentication-service`, `auction-service`, `item-service`, and `payment-service`.
 
-Start all microservices and databases:
+### 5.4 Start All Services
 
-    docker-compose up -d
+```bash
+docker compose up -d
+```
 
-This should start:
+Compose will start:
 
-- All microservice containers  
-- All corresponding database containers  
-- The API Gateway / Web Frontend
+- Eureka, API Gateway, Authentication, Auction, Item, Payment services.  
+- PostgreSQL with persistent volume `postgres_data`.  
+- Mailhog SMTP sink.
 
-### 5.4 Verify System Is Running
+### 5.5 Verify System Health
 
 1. **Check containers**
 
-       docker-compose ps
+   ```bash
+   docker compose ps
+   ```
 
-   All services should be in `Up` state.
+   All containers should display `Up`.
 
-2. **Check gateway health**
+2. **Check Eureka dashboard** – open `http://localhost:8761` and confirm all services are registered (`UP`).
 
-       curl http://localhost:8080/actuator/health
+3. **Hit health endpoints (optional)**
 
-   (Or your equivalent health endpoint.)
+   ```bash
+   curl http://localhost:8080/actuator/health        # gateway
+   curl http://localhost:8081/actuator/health        # auction-service
+   curl http://localhost:8082/actuator/health        # payment-service
+   curl http://localhost:8083/actuator/health        # item-service
+   curl http://localhost:8084/actuator/health        # authentication-service
+   ```
 
-3. **Check individual service health** (optional)
+4. **Open the UI** – during local frontend development, browse to `http://localhost:5173` (Vite dev server) or to whatever static host you used for the built assets. Login/register to test end-to-end.
 
-       curl http://localhost:8081/actuator/health   # User Service
-       curl http://localhost:8082/actuator/health   # Auction Service
-       curl http://localhost:8083/actuator/health   # Catalogue Service
-       curl http://localhost:8084/actuator/health   # Payment Service
-       curl http://localhost:8085/actuator/health   # Shipping Service
+### 5.6 Install Frontend Dependencies
 
-4. **Open the web UI**
+```bash
+cd ../frontend
+npm install
+```
 
-   - Navigate to `http://localhost:8080` in a browser.  
-   - You should see the login / catalogue page.
+Use Node.js 20+ (the project was tested with Node 20.17). Re-run `npm install` whenever dependencies change.
+
+### 5.7 Run the React Dev Server
+
+```bash
+npm run dev
+```
+
+- Vite serves the SPA on `http://localhost:5173` with hot module reloading.  
+- The app calls the gateway at `VITE_API_BASE_URL` (default `http://localhost:8080`). Ensure the Docker Compose stack is running so API calls succeed.  
+- JWTs are stored in `localStorage` under `authToken`; clear it if you need a clean session.
+
+To lint while developing, run `npm run lint` in another terminal.
+
+### 5.8 Build & Preview Production Assets
+
+```bash
+npm run build    # emits optimized bundle to frontend/dist
+npm run preview  # optional: serve the build locally on http://localhost:4173
+```
+
+The resulting `frontend/dist` directory can be hosted by any static file server (Nginx, S3, etc.) or copied into a Spring Boot resource folder if you later decide to serve the SPA through the gateway. When deploying behind the gateway, keep `VITE_API_BASE_URL` pointing at the gateway URL so the built bundle hits the right APIs.
 
 ---
 
 ## 6. Stopping & Restarting
 
-### 6.1 Stop Entire System
+### 6.1 Stop the Stack
 
-To stop all services and databases while preserving volumes:
+```bash
+docker compose down
+```
 
-    docker-compose down
+Services shut down but volumes persist.
 
-### 6.2 Restart Entire System
+### 6.2 Full Restart
 
-To fully restart the system:
-
-    docker-compose down
-    docker-compose up -d
+```bash
+docker compose down
+docker compose up -d
+```
 
 ### 6.3 Restart a Single Service
 
-Example for Auction Service:
+```bash
+docker compose restart auction-service
+```
 
-    docker-compose restart auction-service
-
-(Substitute `auction-service` with the name of the service you want to restart.)
+Swap `auction-service` with the container you need to restart.
 
 ### 6.4 View Logs
 
-- **All services**
+```bash
+docker compose logs -f api-gateway
+docker compose logs -f authentication-service
+```
 
-      docker-compose logs
-
-- **Specific service (e.g., Payment Service)**
-
-      docker-compose logs -f payment-service
-
-Use this when debugging issues with a particular service.
+Tail individual services to diagnose issues. Use `--since 10m` to limit output.
 
 ---
 
 ## 7. Health Checks & Monitoring
 
-### 7.1 Health Endpoints (if enabled)
+- `docker compose ps` – quick status.  
+- `http://localhost:8761` – Eureka UI shows current status and last heartbeat per service.  
+- `GET /actuator/health` – each service exposes Spring Boot Actuator endpoints.  
+- `docker compose logs -f <service>` – streaming logs for troubleshooting.
 
-Typical health endpoints:
-
-- Gateway: `GET /actuator/health` on port `8080`  
-- User Service: `GET /actuator/health` on port `8081`  
-- Auction Service: `GET /actuator/health` on port `8082`  
-- Catalogue Service: `GET /actuator/health` on port `8083`  
-- Payment Service: `GET /actuator/health` on port `8084`  
-- Shipping Service: `GET /actuator/health` on port `8085`  
-
-A healthy service typically returns HTTP 200 with JSON such as:
+Example healthy response:
 
 ```json
 {
@@ -334,218 +333,127 @@ A healthy service typically returns HTTP 200 with JSON such as:
 }
 ```
 
-## 7.2 Log Monitoring
-
-Use `docker-compose logs -f <service-name>` to tail logs.
-
-Look for:
-
-- Startup stack traces
-- Database connection errors
-- Timeouts when calling other services
-- Unexpected HTTP 5xx errors
+---
 
 ## 8. Common Operational Tasks
 
 ### 8.1 Create a Test User
 
-**Via UI**
-
-1. Open http://localhost:8080
-2. Click Sign Up (or equivalent)
-3. Fill in required fields and submit
-
-**Via API (example)**
-
-curl -X POST http://localhost:8080/api/users/signup \
+```bash
+curl -X POST http://localhost:8080/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
-        "username": "testuser",
+        "firstName": "Test",
+        "lastName": "User",
         "email": "test@example.com",
-        "password": "Test1234!"
+        "password": "Test1234!",
+        "address": "123 Demo St"
       }'
+```
 
-Update the path/body to match your actual API.
+Login via CLI or UI:
 
-### 8.2 Create a Test Item & Auction
-
-**Create an item via Catalogue API or UI (example):**
-
-curl -X POST http://localhost:8080/api/catalogue/items \
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{
-        "title": "Test Item",
-        "description": "Sample item for demo",
-        "shippingDays": 3
-      }'
+  -d '{"email":"test@example.com","password":"Test1234!"}'
+```
 
-**Create an auction for that item (example):**
+The response contains the JWT required for authenticated calls.
 
-curl -X POST http://localhost:8080/api/auctions \
+### 8.2 Create a Test Item + Auction
+
+Item creation automatically triggers auction creation. Provide the JWT in the `Authorization` header:
+
+```bash
+TOKEN="Bearer <jwt>"
+curl -X POST http://localhost:8080/api/items \
   -H "Content-Type: application/json" \
+  -H "Authorization: ${TOKEN}" \
   -d '{
-        "itemId": 1,
-        "startPrice": 10,
-        "durationMinutes": 60
+        "name": "Vintage Camera",
+        "description": "1960s rangefinder",
+        "type": "Forward",
+        "shippingDays": 5,
+        "baseShipCost": 20,
+        "expeditedCost": 45,
+        "keywords": ["camera", "vintage"]
       }'
+```
 
-**Bid & pay using the UI:**
+Use the Catalogue UI (or `/api/auction/search`) to confirm the auction was created.
 
-1. Search for Test Item in the catalogue
-2. Select it and click Bid
-3. Place a bid
-4. After the auction ends (or you simulate the end), proceed to payment
+### 8.3 Place a Test Bid
 
-Adjust endpoints and payloads to match your actual controllers.
+```bash
+curl -X POST http://localhost:8080/api/auction/{auctionId}/bid \
+  -H "Authorization: ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 150.00}'
+```
+
+Check `/api/auction/my-bids` or the **My Bids** page in the UI to confirm the bid landed.
+
+### 8.4 Inspect Password Reset Emails
+
+Trigger `/api/auth/forgot` with a known email, then open `http://localhost:8025` to view the reset link captured by Mailhog.
+
+---
 
 ## 9. Troubleshooting
 
-This section maps common symptoms to likely causes and remediation steps.
-
 ### 9.1 UI Loads but Login Fails
 
-**Symptoms**
+- **Likely causes**: `authentication-service` down, Postgres unavailable, incorrect JWT secret, Mailhog unreachable (for forgot flow).  
+- **Actions**: `docker compose logs authentication-service`, verify DB env vars, ensure tokens match values configured in API Gateway.
 
-- http://localhost:8080 loads successfully
-- Login attempts fail with errors or HTTP 5xx responses
+### 9.2 Catalogue Empty or Bids Fail
 
-**Possible Causes**
+- **Likely causes**: `auction-service` unhealthy, database migrations missing, or gateway cannot resolve the service via Eureka.  
+- **Actions**: Check Eureka dashboard, hit `curl http://localhost:8081/actuator/health`, confirm `auction-service` logs show successful DB connection.
 
-- User Service container is down
-- UserDB is not running or is misconfigured
-- API Gateway route to User Service is incorrect
+### 9.3 Item Creation Errors
 
-**Steps**
+- **Likely causes**: Missing JWT header (results in 401), `item-service` offline, or DB schema mismatch.  
+- **Actions**: Validate the `Authorization` header is forwarded, check `item-service` logs for SQL exceptions, confirm `docker compose ps` shows the container up.
 
-1. Check container state:
+### 9.4 Payment Failures
 
-docker-compose ps
+- **Likely causes**: `payment-service` can’t reach Postgres, service still starting when the UI calls it, or upstream auction data missing.  
+- **Actions**: Tail `docker compose logs payment-service`, ensure `payment-service` registered with Eureka, verify auctions exist for the requested IDs.
 
-2. Ensure user-service and user-db (or equivalent) are Up
+### 9.5 Forgot-Password Email Missing
 
-3. If user-service is down, inspect logs:
+- **Likely causes**: Mailhog not running or `MAIL_HOST` misconfigured.  
+- **Actions**: Visit `http://localhost:8025`; if empty, inspect `docker compose logs mailhog` and confirm `.env` entries match service names.
 
-docker-compose logs user-service
-
-4. Fix configuration issues (DB URL, credentials), then restart:
-
-docker-compose restart user-service
-
-5. Verify User Service health:
-
-curl http://localhost:8081/actuator/health
-
-6. Confirm API Gateway routing configuration for `/api/users/**`
-
-### 9.2 Catalogue Page Shows No Items
-
-**Symptoms**
-
-- UI loads, but the catalogue displays "No items found" even though you expect data
-
-**Possible Causes**
-
-- Catalogue Service is down
-- CatalogueDB is empty (seed data never loaded)
-- Search keyword does not match any items
-- API Gateway route to Catalogue Service is misconfigured
-
-**Steps**
-
-1. Check Catalogue Service status:
-
-docker-compose ps
-curl http://localhost:8083/actuator/health
-docker-compose logs catalogue-service
-
-2. Confirm that items exist in the database:
-   - Connect to CatalogueDB and query the items table, or
-   - Re-run seed scripts or create a test item via API (see §8.2)
-
-3. Verify that the UI is calling the correct endpoint and that the endpoint returns JSON with items
-
-### 9.3 Payments Always Fail
-
-**Symptoms**
-
-- User reaches the payment page
-- Payment attempts consistently fail or remain stuck in a "failed" state
-
-**Possible Causes**
-
-- Payment Service cannot reach the Payment Provider (mock URL is wrong)
-- Payment Service cannot connect to PaymentDB
-- Payment Service cannot fetch final auction data from Auction Service
-
-**Steps**
-
-1. Check Payment Service logs:
-
-docker-compose logs payment-service
-
-2. Verify environment variables:
-   - `PAYMENT_PROVIDER_URL`
-   - `PAYMENT_DB_URL`, `PAYMENT_DB_USERNAME`, `PAYMENT_DB_PASSWORD`
-
-3. Test the Payment Provider (if external mock):
-
-curl {{PAYMENT_PROVIDER_URL}}/health
-
-4. Check Auction Service health and logs:
-
-curl http://localhost:8082/actuator/health
-docker-compose logs auction-service
-
-### 9.4 5xx Errors When Placing Bids
-
-**Symptoms**
-
-- Catalogue page works
-- Attempting to place a bid returns HTTP 500 or 503
-
-**Possible Causes**
-
-- Auction Service is down
-- AuctionDB connection issues
-- Invalid request payload from the UI
-
-**Steps**
-
-1. Check Auction Service:
-
-docker-compose ps
-docker-compose logs auction-service
-
-2. Verify Auction Service health:
-
-curl http://localhost:8082/actuator/health
-
-3. Confirm that the UI request payload matches the expected API contract (correct fields, types, and URLs)
+---
 
 ## 10. Resetting & Seeding Data
 
-### 10.1 Reset Databases (Destructive Operation)
+### 10.1 Reset the Database (Destructive)
 
-**Warning:** This operation removes all persistent data (volumes).
+```bash
+docker compose down -v
+docker compose up -d
+```
 
-To completely reset the databases:
+Dropping volumes wipes the `auction` database. Recreate demo data afterwards (see §8).
 
-docker-compose down -v
-docker-compose up -d
+### 10.2 Manual SQL Access / Seeding
 
-`-v` removes volumes, wiping all database contents.
+```bash
+docker exec -it postgres psql -U ${DB_USERNAME} -d auction
+```
 
-After restart, you must run seed scripts or recreate test data via API/GUI.
+From the psql prompt you can run schema or seed scripts. Store any repeatable SQL under `microservices/setup-script.sh` and execute via:
 
-### 10.2 Reseed Sample Data
+```bash
+./setup-script.sh
+```
 
-If you provide seed scripts, document how to run them here. Example for PostgreSQL:
+This script applies schema migrations and inserts baseline data for demos.
 
-# Example: run DB schema & seed for UserDB
-docker exec -it user-db psql -U {{user}} -d userdb \
-  -f /docker-entrypoint-initdb.d/init-user.sql
+---
 
-# Example: run DB schema & seed for CatalogueDB
-docker exec -it catalogue-db psql -U {{user}} -d cataloguedb \
-  -f /docker-entrypoint-initdb.d/init-catalogue.sql
-
+The runbook now reflects the actual services, ports, and operational steps defined in `microservices/docker-compose.yml`.
