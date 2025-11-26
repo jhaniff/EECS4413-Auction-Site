@@ -21,6 +21,20 @@ const isStrongPassword = (password: string): boolean => {
   return PASSWORD_REGEX.test(password);
 };
 
+const getFriendlyErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof Error) {
+    const raw = error.message?.toLowerCase() ?? '';
+    if (raw.includes('failed to fetch') || raw.includes('network')) {
+      return 'Unable to reach the server. Please check your internet connection and try again.';
+    }
+    if (raw.includes('timeout')) {
+      return 'The request timed out. Please try again in a moment.';
+    }
+    return error.message || fallback;
+  }
+  return fallback;
+};
+
 function SignInForm() {
   // ---------------- state ----------------
 
@@ -129,9 +143,12 @@ function SignInForm() {
       // Navigate to catalogue page after successful login
       navigate('/catalogue');
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Email or password is incorrect.';
-      setFormError(message || 'Email or password is incorrect.');
+      setFormError(
+        getFriendlyErrorMessage(
+          err,
+          'Email or password is incorrect. Please try again.',
+        ),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -156,6 +173,7 @@ function SignInForm() {
             type="email"
             value={email}
             autoComplete="email"
+            placeholder="you@example.com"
             onChange={handleEmailChange}
             onBlur={handleBlur('email')}
             className={`auth-input ${
@@ -176,6 +194,7 @@ function SignInForm() {
             type="password"
             value={password}
             autoComplete="current-password"
+            placeholder="Enter your password"
             onChange={handlePasswordChange}
             onBlur={handleBlur('password')}
             className={`auth-input ${

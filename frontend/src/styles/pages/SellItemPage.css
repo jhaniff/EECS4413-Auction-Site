@@ -1,0 +1,133 @@
+.sell-item-page {
+  min-height: 100vh;
+  padding: 40px clamp(24px, 6vw, 96px) 96px;
+  background: radial-gradient(circle at top, rgba(255, 255, 255, 0.08), transparent 55%),
+    linear-gradient(150deg, #020617 0%, #0f172a 55%, #1d2b64 100%);
+  color: #f8fafc;
+}
+
+.sell-item-layout {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.sell-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 24px 32px;
+  border-radius: 30px;
+  background: rgba(2, 6, 23, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  margin-bottom: 2.5rem;
+  box-shadow: 0 28px 70px rgba(2, 6, 23, 0.55);
+}
+
+.sell-item-header h1 {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 2rem;
+}
+
+.ghost-link {
+  padding: 0.55rem 1.25rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  color: #f8fafc;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.sell-item-form {
+  background: rgba(2, 6, 23, 0.7);
+  border-radius: 32px;
+  padding: 32px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  box-shadow: 0 40px 90px rgba(2, 6, 23, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.form-row label {
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.form-row input,
+.form-row textarea,
+.form-row select {
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.6);
+  padding: 0.85rem 1rem;
+  color: #f8fafc;
+  font-size: 1rem;
+}
+
+.form-row textarea {
+  resize: vertical;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.form-actions button {
+  padding: 0.85rem 1.6rem;
+  border-radius: 999px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.form-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-actions button[type='submit'] {
+  background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+  color: #021526;
+}
+
+.form-actions .secondary {
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  color: #f8fafc;
+}
+
+.form-error {
+  color: #fecdd3;
+  margin: 0;
+}
+
+.form-success {
+  color: #bef264;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .sell-item-header {
+    flex-direction: column;
+  }
+
+  .ghost-link {
+    align-self: stretch;
+    text-align: center;
+  }
+}

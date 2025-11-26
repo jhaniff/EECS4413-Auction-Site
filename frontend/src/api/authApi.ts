@@ -1,6 +1,8 @@
-// All authentication endpoints are exposed under /api/auth on port 8080
-// e.g. POST http://localhost:8080/api/auth/login
-const API_BASE = 'http://localhost:8080/api/auth';
+import { API_BASE_URL } from './config';
+
+// Ensure we never end up with duplicate slashes when composing URLs
+const NORMALIZED_BASE = API_BASE_URL.replace(/\/+$/, '');
+const API_BASE = `${NORMALIZED_BASE}/api/auth`;
 
 export interface AuthResponse {
   accessToken: string;

@@ -1,12 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import SignInForm from '../../components/auth/SignInForm';
 import SignUpForm from '../../components/auth/SignUpForm';
-import './AuthPage.css';
+import SocialAuthButtons from '../../components/auth/SocialAuthButtons';
+import '../../styles/pages/AuthPage.css';
 
 type AuthTab = 'signin' | 'signup';
 
 function AuthPage() {
-  const [activeTab, setActiveTab] = useState<AuthTab>('signin');
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<AuthTab>(() =>
+    searchParams.get('mode') === 'signup' ? 'signup' : 'signin',
+  );
+
+  useEffect(() => {
+    const modeParam = searchParams.get('mode');
+    if (modeParam === 'signup' || modeParam === 'signin') {
+      setActiveTab(modeParam);
+    }
+  }, [searchParams]);
 
   const handleSignedUp = () => {
     setActiveTab('signin');
@@ -14,6 +26,10 @@ function AuthPage() {
 
   return (
     <div className="auth-page">
+      <Link to="/" className="auth-back-link">
+        <span aria-hidden="true">&larr;</span>
+        <span>Back to landing</span>
+      </Link>
       <div className="auth-card">
         <h1 className="auth-title">Auction Platform</h1>
 
@@ -42,6 +58,8 @@ function AuthPage() {
         ) : (
           <SignUpForm onSignedUp={handleSignedUp} />
         )}
+
+        <SocialAuthButtons />
       </div>
     </div>
   );
