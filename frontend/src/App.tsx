@@ -13,13 +13,13 @@ function App() {
         {/* landing */}
         <Route path="/" element={<LandingPage />} />
 
-        {/* auth flows */}
-        <Route path="/auth" element={<AuthPage />} />
-        <Route path="/auth/forgot" element={<ForgotPasswordPage />} />
-        <Route path="/auth/reset" element={<ResetPasswordPage />} />
+          {/* auth flows */}
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/auth/forgot" element={<ForgotPasswordPage />} />
+          <Route path="/auth/reset" element={<ResetPasswordPage />} />
 
-        {/* after login */}
-        <Route path="/catalogue" element={<CataloguePage />} />
+          {/* after login */}
+          <Route path="/catalogue" element={<CataloguePage />} />
 
         {/* fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

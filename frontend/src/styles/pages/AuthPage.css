@@ -92,7 +92,9 @@
   gap: 16px;
 }
 
-.auth-row {
+/* Reusable vertical group */
+.auth-row,
+.auth-address-group {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -134,8 +136,13 @@
   box-shadow: 0 0 0 3px rgba(67, 99, 247, 0.2);
 }
 
-.auth-button,
-.auth-form button {
+/* Error border for invalid fields */
+.auth-input-error {
+  border-color: #d93025;
+}
+
+/* Primary button */
+.auth-button {
   width: 100%;
   border: none;
   border-radius: 10px;
@@ -167,7 +174,7 @@
 .auth-error,
 .form-error {
   font-size: 13px;
-  color: #dc2626;
+  color: #d93025;
   margin-top: 4px;
 }
 
