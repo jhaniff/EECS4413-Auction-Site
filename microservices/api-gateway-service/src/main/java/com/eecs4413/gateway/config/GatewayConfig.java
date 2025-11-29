@@ -43,7 +43,7 @@ public class GatewayConfig {
                         .build())
 
                 .and(route("item_route")
-                        .route(path("/api/item/**"), http())
+                        .route(path("/api/items/**"), http())
                         .before(uri("lb://item-service"))
                         .filter(authenticationFilter)
                         .build())
