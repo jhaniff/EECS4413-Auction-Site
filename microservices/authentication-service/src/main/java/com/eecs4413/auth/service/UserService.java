@@ -16,11 +16,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+
 
 import java.time.OffsetDateTime;
 
 @Service
 public class UserService {
+
     private UserRepository userRepository;
     private JWTService jwtService;
     private PasswordEncoder passwordEncoder;
@@ -28,18 +31,26 @@ public class UserService {
     private TokenRepository tokenRepository;
     private AuctionUserDetailsService auctionUserDetailsService;
 
-    public UserService(UserRepository userRepository, AuthenticationManager authenticationManager, JWTService jwtService, TokenRepository tokenRepository, PasswordEncoder passwordEncoder, AuctionUserDetailsService auctionUserDetailsService){
+    public UserService(
+            UserRepository userRepository,
+            AuthenticationConfiguration authConfig,
+            JWTService jwtService,
+            TokenRepository tokenRepository,
+            PasswordEncoder passwordEncoder,
+            AuctionUserDetailsService auctionUserDetailsService
+    ) throws Exception {
         this.userRepository = userRepository;
-        this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.auctionUserDetailsService = auctionUserDetailsService;
+
+        this.authenticationManager = authConfig.getAuthenticationManager();
     }
+
 
     @Transactional
     public AuthenticationResponseDTO registerUser(RegisterDTO registerDTO){
-        // Check confirm password
         if(!registerDTO.getPassword().equals(registerDTO.getConfirmPassword())){
             throw new UserCredentialsException("Password and Confirm Password do not match");
         }
@@ -59,43 +70,49 @@ public class UserService {
         user.getAddress().setUser(user);
 
         userRepository.save(user);
-        String accessToken = jwtService.generateToken(user);
 
-        Token token = Token.builder()
-                .token(accessToken)
+        String token = jwtService.generateToken(user);
+
+        tokenRepository.save(Token.builder()
+                .token(token)
                 .user(user)
                 .expired(false)
                 .revoked(false)
-                .build();
-        tokenRepository.save(token);
+                .build());
 
-        return AuthenticationResponseDTO.builder()
-                .accessToken(accessToken)
-                .build();
+        return AuthenticationResponseDTO.builder().accessToken(token).build();
     }
 
     @Transactional
     public AuthenticationResponseDTO authenticate(SignInDTO signInDTO) {
-        try{
-            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInDTO.getEmail(), signInDTO.getPassword()));
-            if(authentication.isAuthenticated()) {
-                User user = userRepository.findByEmail(signInDTO.getEmail()).orElseThrow(()-> new UserCredentialsException("User not found") );
-                String accessToken = jwtService.generateToken(user);
-                Token token = Token.builder()
-                        .token(accessToken)
-                        .user(user)
-                        .expired(false)
-                        .revoked(false)
-                        .build();
-                tokenRepository.save(token);
+        try {
+        	Authentication authentication = authenticationManager.authenticate(
+        	        new UsernamePasswordAuthenticationToken(
+        	                signInDTO.getEmail(),
+        	                signInDTO.getPassword()
+        	        )
+        	);
 
-                return AuthenticationResponseDTO.builder()
-                        .accessToken(accessToken)
-                        .build();
+            if (!authentication.isAuthenticated()) {
+                throw new UserCredentialsException("Authentication failed");
             }
-            throw new UserCredentialsException("Authentication Failed User Not Authenticated");
-        }catch(AuthenticationException e){
-            throw new UserCredentialsException("Authentication Failed User Not Authenticated");
+
+            User user = userRepository.findByEmail(signInDTO.getEmail())
+                    .orElseThrow(() -> new UserCredentialsException("User not found"));
+
+            String token = jwtService.generateToken(user);
+
+            tokenRepository.save(Token.builder()
+                    .token(token)
+                    .user(user)
+                    .expired(false)
+                    .revoked(false)
+                    .build());
+
+            return AuthenticationResponseDTO.builder().accessToken(token).build();
+
+        } catch (AuthenticationException e) {
+            throw new UserCredentialsException("Authentication failed");
         }
     }
 
@@ -103,13 +120,17 @@ public class UserService {
         String token = null;
         String username = null;
         Long userId = null;
-        try{
-            if(authHeader != null && authHeader.startsWith("Bearer ")){
+
+        try {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 token = authHeader.substring(7);
                 username = jwtService.extractUserName(token);
                 userId = jwtService.extractUserId(token);
             }
-            User user = userRepository.findByEmail(username).orElseThrow(()-> new UserCredentialsException("User not found") );
+
+            User user = userRepository.findByEmail(username)
+                    .orElseThrow(() -> new UserCredentialsException("User not found"));
+
             if (jwtService.validateToken(token, user.getEmail()) && jwtService.isTokenValid(token)) {
                 return TokenValidationResponse.builder()
                         .valid(true)
@@ -117,16 +138,9 @@ public class UserService {
                         .email(user.getEmail())
                         .build();
             }
-        }catch(Exception e){
-            // Extract Username or UserId failed meaning not a valid JWT token
-        }
+        } catch (Exception ignored) {}
 
-
-        return TokenValidationResponse.builder()
-                .valid(false)
-                .userId(null)
-                .email(null)
-                .build();
+        return TokenValidationResponse.builder().valid(false).build();
     }
 
     public void revokeAllForUser(Long userId) {
@@ -148,5 +162,31 @@ public class UserService {
             throw new UserCredentialsException("Password must not contain spaces");
     }
 
+    @Transactional
+    public User loadOrCreateUserFromGoogle(String email, String name) {
 
+        var optionalUser = userRepository.findByEmail(email);
+        if (optionalUser.isPresent()) {
+            return optionalUser.get();
+        }
+
+        String firstName = name != null ? name.split(" ")[0] : "Google";
+        String lastName = name != null && name.contains(" ")
+                ? name.substring(name.indexOf(" ") + 1)
+                : "User";
+
+        User newUser = User.builder()
+                .email(email)
+                .firstName(firstName)
+                .lastName(lastName)
+                .passwordHash(passwordEncoder.encode("google-login-placeholder"))
+                .createdAt(OffsetDateTime.now())
+                .updatedAt(OffsetDateTime.now())
+                .isActive(true)
+                .address(null)
+                .build();
+
+        userRepository.save(newUser);
+        return newUser;
+    }
 }
