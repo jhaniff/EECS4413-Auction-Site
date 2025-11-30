@@ -3,6 +3,7 @@ import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/auth/AuthPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
+import OAuthSuccessPage from './pages/auth/OAuthSuccessPage';
 import CataloguePage from './pages/CataloguePage';
 import UserBidsPage from './pages/UserBidsPage';
 import SellItemPage from './pages/SellItemPage';
@@ -19,6 +20,7 @@ function App() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/auth/forgot" element={<ForgotPasswordPage />} />
           <Route path="/auth/reset" element={<ResetPasswordPage />} />
+          <Route path="/oauth-success" element={<OAuthSuccessPage />} />
 
           {/* after login */}
           <Route path="/catalogue" element={<CataloguePage />} />

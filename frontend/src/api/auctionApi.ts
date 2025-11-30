@@ -2,6 +2,11 @@ import { API_BASE_URL } from './config';
 
 const NORMALIZED_BASE = API_BASE_URL.replace(/\/+$/, '');
 
+const buildAuthHeaders = (): HeadersInit => {
+  const token = localStorage.getItem('authToken');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 export type SortDirection = 'asc' | 'desc';
 
 export interface AuctionSummary {
@@ -124,6 +129,10 @@ export async function fetchAuctionDetail(
 
 export async function fetchUserBids(signal?: AbortSignal): Promise<UserBidSummary[]> {
   const response = await fetch(`${NORMALIZED_BASE}/api/auction/my-bids`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...buildAuthHeaders(),
+    },
     signal,
   });
 
