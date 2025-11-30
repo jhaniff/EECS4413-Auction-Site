@@ -13,11 +13,16 @@ const initialState = {
   shippingDays: '5',
   baseShipCost: '25',
   expeditedCost: '60',
+  startPrice: '10',
+  endsAt: '',
   keywords: '',
 };
 
 function SellItemPage() {
-  const [formState, setFormState] = useState(initialState);
+  const [formState, setFormState] = useState(() => ({
+    ...initialState,
+    endsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16),
+  }));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -56,6 +61,8 @@ function SellItemPage() {
         shippingDays: Number.parseInt(formState.shippingDays, 10),
         baseShipCost: Number.parseFloat(formState.baseShipCost),
         expeditedCost: Number.parseFloat(formState.expeditedCost),
+        startPrice: Number.parseInt(formState.startPrice, 10),
+        endsAt: new Date(formState.endsAt).toISOString(),
         keywords,
       };
 
@@ -163,6 +170,32 @@ function SellItemPage() {
                 min="0"
                 step="0.01"
                 value={formState.expeditedCost}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-grid">
+            <div className="form-row">
+              <label htmlFor="startPrice">Start Price (CAD)</label>
+              <input
+                id="startPrice"
+                name="startPrice"
+                type="number"
+                min="1"
+                value={formState.startPrice}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="form-row">
+              <label htmlFor="endsAt">Auction End Date</label>
+              <input
+                id="endsAt"
+                name="endsAt"
+                type="datetime-local"
+                value={formState.endsAt}
                 onChange={handleChange}
                 required
               />
