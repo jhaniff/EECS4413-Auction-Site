@@ -1,16 +1,18 @@
 package com.eecs4413.auction.dto;
 
-import java.time.OffsetDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.server.core.Relation;
+
+import java.time.OffsetDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Relation(collectionRelation = "bids")
 public class UserBidSummaryDTO {
     private Long auctionId;
     private Long itemId;
