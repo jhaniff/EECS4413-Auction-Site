@@ -1,0 +1,44 @@
+.oauth-success-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top, rgba(15, 23, 42, 0.6), #020617 65%);
+  padding: 24px;
+  color: #f8fafc;
+}
+
+.oauth-success-card {
+  max-width: 480px;
+  width: 100%;
+  background: rgba(2, 6, 23, 0.85);
+  border-radius: 32px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 25px 70px rgba(2, 6, 23, 0.65);
+}
+
+.oauth-success-card h1 {
+  margin: 0.5rem 0 1rem;
+}
+
+.oauth-success-card p {
+  margin: 0 0 0.75rem;
+  color: #cbd5f5;
+}
+
+.oauth-success-card .hint {
+  font-size: 0.95rem;
+  color: #94a3b8;
+}
+
+.oauth-success-card .inline-link {
+  color: #22d3ee;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.oauth-success-card .inline-link:hover {
+  text-decoration: underline;
+}
