@@ -12,7 +12,6 @@ import com.eecs4413.payment.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.lang.module.ResolutionException;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -39,10 +38,22 @@ public class PaymentService {
           return convertToPaymentDetailDTO(payment);
      }
      private PaymentDetailDTO convertToPaymentDetailDTO(Payment payment){
+          int bid = payment.getAuction().getCurrentPrice();
+          BigDecimal baseCost = payment.getAuction().getItem().getBaseShipCost();
+          BigDecimal expeditedCost = payment.getAuction().getItem().getExpeditedCost();
+          BigDecimal totalBaseCost = baseCost.add(BigDecimal.valueOf(bid));
+          BigDecimal totalExpeditedCost = expeditedCost.add(BigDecimal.valueOf(bid));
           return PaymentDetailDTO.builder()
                   .paymentID(payment.getPaymentID())
-                  .auction(payment.getAuction())
-                  .payee(payment.getPayee())
+                  .firstName(payment.getPayee().getFirstName())
+                  .lastName(payment.getPayee().getLastName())
+                  .postalCode(payment.getPayee().getAddress().getPostalCode())
+                  .city(payment.getPayee().getAddress().getCity())
+                  .country(payment.getPayee().getAddress().getCountry())
+                  .totalBaseCost(totalBaseCost)
+                  .totalExpeditedCost(totalExpeditedCost)
+                  .streetNumber(payment.getPayee().getAddress().getStreetNumber())
+                  .streetName(payment.getPayee().getAddress().getStreetName())
                   .paymentDate(payment.getPaymentDate())
                   .expectedDeliveryDate(payment.getExpectedDeliveryDate())
                   .build();
@@ -54,7 +65,7 @@ public class PaymentService {
                        .orElseThrow(() -> new ResourceNotFoundException("Auction not found"));
                auction = auctionRepository.findById(auction.getAuctionId()).get();
                if(userId != auction.getHighestBidder().getUserId()){
-
+                    throw new IllegalArgumentException("Wrong user trying to place payment");
                }
                // Validate auction state
                OffsetDateTime now = OffsetDateTime.now();

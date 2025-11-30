@@ -15,9 +15,9 @@ cd ../service-registry && ./mvnw clean package -DskipTests
 cd ..
 
 echo "====================================="
-echo " Docker Compose down (with volumes)"
+echo " Docker Compose down"
 echo "====================================="
-docker compose down -v
+docker compose down
 
 echo "====================================="
 echo " Rebuilding docker images (no cache)"

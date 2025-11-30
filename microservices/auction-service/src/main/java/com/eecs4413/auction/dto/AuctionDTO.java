@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.server.core.Relation;
 
 import java.time.OffsetDateTime;
 
@@ -11,6 +12,7 @@ import java.time.OffsetDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Relation(collectionRelation = "auctions")
 public class AuctionDTO {
     private Long auctionId;
     private Long itemId;

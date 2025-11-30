@@ -25,6 +25,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
+      - KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD}
+      - KEYSTORE_LOCATION=${KEYSTORE_LOCATION}
+      - KEYSTORE_TYPE=${KEYSTORE_TYPE}
     depends_on:
       - eureka-server
       - authentication-service
