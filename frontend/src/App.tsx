@@ -4,6 +4,7 @@ import AuthPage from './pages/auth/AuthPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import CataloguePage from './pages/CataloguePage';
+import AuctionDetailPage from './pages/AuctionDetailPage';
 import UserBidsPage from './pages/UserBidsPage';
 import SellItemPage from './pages/SellItemPage';
 import './styles/app/App.css';
@@ -22,6 +23,7 @@ function App() {
 
           {/* after login */}
           <Route path="/catalogue" element={<CataloguePage />} />
+          <Route path="/auction/:auctionId" element={<AuctionDetailPage />} />
           <Route path="/bids" element={<UserBidsPage />} />
           <Route path="/sell" element={<SellItemPage />} />
 

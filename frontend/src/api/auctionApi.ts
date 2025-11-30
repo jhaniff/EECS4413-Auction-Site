@@ -76,7 +76,19 @@ export async function searchAuctions(
   params: AuctionSearchParams = {},
 ): Promise<AuctionSearchResponse> {
   const { signal, ...rest } = params;
-  const response = await fetch(buildSearchUrl(rest), { signal });
+
+  const token = localStorage.getItem('authToken');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(buildSearchUrl(rest), { 
+    headers,
+    signal 
+  });
 
   if (!response.ok) {
     throw new Error('Unable to load auctions right now. Please try again.');
@@ -122,8 +134,61 @@ export async function fetchAuctionDetail(
   return response.json() as Promise<AuctionDetail>;
 }
 
+export interface BidRequest {
+  auctionId: number;
+  amount: number;
+}
+
+export interface BidResponse {
+  auctionId: number;
+  newHighestBid: number;
+  highestBidderId: number;
+  highestBidderName: string;
+  updatedAt: string;
+  message: string;
+}
+
+export async function placeBid(payload: BidRequest): Promise<BidResponse> {
+  const token = localStorage.getItem('authToken');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${NORMALIZED_BASE}/api/auction/bid`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    let message = 'Unable to place bid.';
+    try {
+      const json = JSON.parse(text);
+      message = json.message || json.error || message;
+    } catch {
+      // ignore
+    }
+    throw new Error(message);
+  }
+
+  return response.json() as Promise<BidResponse>;
+}
+
 export async function fetchUserBids(signal?: AbortSignal): Promise<UserBidSummary[]> {
+  const token = localStorage.getItem('authToken');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${NORMALIZED_BASE}/api/auction/my-bids`, {
+    headers,
     signal,
   });
 
