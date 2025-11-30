@@ -12,6 +12,8 @@ import org.springframework.web.servlet.function.HandlerFunction;
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.ServerResponse;
 
+import java.net.URI;
+
 @Component
 @RequiredArgsConstructor
 public class AuthenticationFilter implements HandlerFilterFunction<ServerResponse, ServerResponse> {
@@ -43,11 +45,28 @@ public class AuthenticationFilter implements HandlerFilterFunction<ServerRespons
         if (validation == null || !validation.isValid()) {
             return ServerResponse.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
         }
+        URI uri = request.uri();
+        String scheme = uri.getScheme();
+        String host = uri.getHost();
+        int port = uri.getPort();
+
+        int validPort = (port == -1) ? ("https".equalsIgnoreCase(scheme) ? 443 : 80) : port;
+        String forwardedHost = (port == -1) ? host : host+":"+validPort;
 
         // Add headers for internal network microservices so they know they are validated
         ServerRequest mutatedRequest = ServerRequest.from(request)
+                .headers(headers ->{
+                    headers.remove("AuthenticatedUserId");
+                    headers.remove("Username");
+                    headers.remove("X-Forwarded-Host");
+                    headers.remove("X-Forwarded-Port");
+                    headers.remove("X-Forwarded-Proto");
+                })
                 .header("AuthenticatedUserId", String.valueOf(validation.getUserId()))
                 .header("Username", validation.getEmail())
+                .header("X-Forwarded-Host", forwardedHost)
+                .header("X-Forwarded-Port", String.valueOf(validPort))
+                .header("X-Forwarded-Proto", scheme)
                 .build();
 
         return next.handle(mutatedRequest);
