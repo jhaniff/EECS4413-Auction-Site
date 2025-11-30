@@ -1,6 +1,6 @@
 
 export async function placePayment(paymentInfo){
-    const URL = "http://localhost:8080/payment/place";
+    const URL = "https://localhost:8080/payment/place";
     const response = await fetch(URL, {
         method: "POST",
         headers: {"Content-Type": "application/json"},

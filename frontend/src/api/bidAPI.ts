@@ -1,5 +1,5 @@
 export async function placeBid(auctionId, amount){
-    const URL = "http://localhost:8080/auction/bid";
+    const URL = "https://localhost:8080/auction/bid";
     const bidderId = localStorage.getItem("userId");
 
     const response = await fetch(URL, {
