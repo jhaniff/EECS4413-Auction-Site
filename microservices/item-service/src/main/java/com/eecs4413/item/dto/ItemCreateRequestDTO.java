@@ -1,12 +1,11 @@
 package com.eecs4413.item.dto;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Data
@@ -37,6 +36,13 @@ public class ItemCreateRequestDTO {
     @NotNull
     @DecimalMin(value = "0.0", inclusive = true)
     private BigDecimal expeditedCost;
+
+    @NonNull
+    @Positive
+    private Integer startPrice;
+
+    @NonNull
+    private OffsetDateTime endsAt;
 
     // Free-form tags supplied by the seller; validation trims and drops blanks later on.
     private List<@NotBlank String> keywords;

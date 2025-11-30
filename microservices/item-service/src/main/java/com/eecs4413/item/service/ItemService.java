@@ -3,9 +3,11 @@ package com.eecs4413.item.service;
 import com.eecs4413.item.dto.ItemCreateRequestDTO;
 import com.eecs4413.item.dto.ItemDTO;
 import com.eecs4413.item.exception.InvalidBidException;
+import com.eecs4413.item.model.Auction;
 import com.eecs4413.item.model.Item;
 import com.eecs4413.item.model.Keyword;
 import com.eecs4413.item.model.User;
+import com.eecs4413.item.repository.AuctionRepository;
 import com.eecs4413.item.repository.ItemRepository;
 import com.eecs4413.item.repository.KeywordRepository;
 import com.eecs4413.item.repository.UserRepository;
@@ -25,11 +27,13 @@ public class ItemService {
     private final ItemRepository itemRepository;
     private final KeywordRepository keywordRepository;
     private final UserRepository userRepository;
+    private final AuctionRepository auctionRepository;
 
-    public ItemService(ItemRepository itemRepository, KeywordRepository keywordRepository, UserRepository userRepository){
+    public ItemService(ItemRepository itemRepository, KeywordRepository keywordRepository, UserRepository userRepository, AuctionRepository auctionRepository){
         this.itemRepository = itemRepository;
         this.keywordRepository = keywordRepository;
         this.userRepository = userRepository;
+        this.auctionRepository = auctionRepository;
     }
 
     public List<ItemDTO> getItems() {
@@ -65,6 +69,20 @@ public class ItemService {
                 .build();
 
         Item savedItem = Objects.requireNonNull(itemRepository.save(itemToPersist));
+
+        Auction auction = Auction.builder()
+                .bids(new ArrayList<>())
+                .item(savedItem)
+                .currentPrice(request.getStartPrice())
+                .startPrice(request.getStartPrice())
+                .endsAt(request.getEndsAt())
+                .startsAt(OffsetDateTime.now())
+                .status("ONGOING")
+                .build();
+
+        Auction auctionSaved = auctionRepository.save(auction);
+
+
         return convertEntityToDTO(savedItem);
     }
 
