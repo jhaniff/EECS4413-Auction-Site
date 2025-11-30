@@ -17,13 +17,7 @@ const PROVIDERS: OAuthProvider[] = [
     name: 'Google',
     description: 'Use your Google account',
     authPath: '/oauth2/authorization/google'
-  },
-  {
-    id: 'github',
-    name: 'GitHub',
-    description: 'Use your GitHub account',
-    authPath: '/oauth2/authorization/github',
-  },
+  }
 ];
 
 export const OAUTH_PROVIDERS: OAuthProviderConfig[] = PROVIDERS.map((provider) => ({
