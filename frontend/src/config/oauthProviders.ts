@@ -16,7 +16,7 @@ const PROVIDERS: OAuthProvider[] = [
     id: 'google',
     name: 'Google',
     description: 'Use your Google account',
-    authPath: '/oauth2/authorization/google',
+    authPath: '/oauth2/authorization/google'
   },
   {
     id: 'github',
