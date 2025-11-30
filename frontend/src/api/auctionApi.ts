@@ -56,6 +56,14 @@ interface SpringPage<T> {
   totalElements?: number;
 }
 
+// --- AUTH HEADER FIX ---
+function authHeader() {
+  const token = localStorage.getItem('authToken');
+  if (!token) return {};
+  return { Authorization: `Bearer ${token}` };
+}
+// ------------------------
+
 function buildSearchUrl({
   query = '',
   page = 0,
@@ -76,7 +84,13 @@ export async function searchAuctions(
   params: AuctionSearchParams = {},
 ): Promise<AuctionSearchResponse> {
   const { signal, ...rest } = params;
-  const response = await fetch(buildSearchUrl(rest), { signal });
+
+  const response = await fetch(buildSearchUrl(rest), {
+    signal,
+    headers: {
+      ...authHeader(),
+    },
+  });
 
   if (!response.ok) {
     throw new Error('Unable to load auctions right now. Please try again.');
@@ -113,6 +127,9 @@ export async function fetchAuctionDetail(
 ): Promise<AuctionDetail> {
   const response = await fetch(`${NORMALIZED_BASE}/api/auction/${auctionId}`, {
     signal,
+    headers: {
+      ...authHeader(),
+    },
   });
 
   if (!response.ok) {
@@ -125,6 +142,9 @@ export async function fetchAuctionDetail(
 export async function fetchUserBids(signal?: AbortSignal): Promise<UserBidSummary[]> {
   const response = await fetch(`${NORMALIZED_BASE}/api/auction/my-bids`, {
     signal,
+    headers: {
+      ...authHeader(),
+    },
   });
 
   if (!response.ok) {

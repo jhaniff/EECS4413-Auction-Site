@@ -28,15 +28,15 @@ function App() {
           <Route path="/catalogue" element={<CataloguePage />} />
           <Route path="/bids" element={<UserBidsPage />} />
           <Route path="/sell" element={<SellItemPage />} />
-          <Route path="/auction/:id" element={<AuctionDetailPage />} />
+          <Route path="/auction/:auctionId" element={<AuctionDetailPage />} />
           <Route path="/auction/:id/payment" element={<PaymentPage />} />
           <Route path="/payment/:paymentId/receipt" element={<ReceiptPage />} />
 
         {/* fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
-
       </Routes>
     </div>
   );
 }
+
 export default App;

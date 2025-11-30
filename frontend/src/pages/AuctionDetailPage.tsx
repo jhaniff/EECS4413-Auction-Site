@@ -1,69 +1,95 @@
-import BidForm from "../components/BidForm";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from 'react';
-import "../styles/auctionStyles.css";
 
-function AuctionDetailPage(){
-    const { id } = useParams();
-    const auctionId = id;
-    const [auction, setAuction] = useState(null);
-    const [remaining, setRemaining] = useState("");
+function AuctionDetailPage() {
+  const { auctionId } = useParams();
+  const [auction, setAuction] = useState(null);
+  const [amount, setAmount] = useState("");
+  const [error, setError] = useState("");
 
-    useEffect(() => {
-      fetch(`http://localhost:8080/auction/${auctionId}`)
-       .then(resp => resp.json())
-       .then(data => setAuction(data));
-    }, [auctionId]);
-
-    useEffect(() => {
-      if(!auction) return;
-      function updateRemaining(){
-        const end = new Date(auction.endsAt).getTime();
-        const now = Date.now();
-        const diff = end - now;
-        if(diff <= 0){
-          setRemaining("Auction has ended");
-          return;
+  useEffect(() => {
+    async function loadAuction() {
+      try {
+        const res = await fetch(`http://localhost:8080/api/auction/${auctionId}`);
+        if (!res.ok) {
+          throw new Error("Failed to load auction");
         }
-        const hours = Math.floor(diff / 3600000);
-        const minutes = Math.floor((diff % 3600000) / 60000);
-        const seconds = Math.floor((diff % 60000) / 1000);
-        const formatted = `${hours}h ${String(minutes).padStart(2,"0")}m ${String(seconds).padStart(2,"0")}s`;
-        setRemaining(formatted);
+        const data = await res.json();
+        setAuction(data);
+      } catch (e) {
+        setError("Could not load auction.");
       }
-      updateRemaining();
-      const interval = setInterval(updateRemaining, 1000);
-      return () => clearInterval(interval);
-    }, [auction]);
-
-    if(!auction){
-        return <p className="center-text">One moment please...</p>;
     }
+    loadAuction();
+  }, [auctionId]);
 
-    const currentHighestBid = auction.currentPrice || auction.startPrice;
+  async function submitBid() {
+    setError("");
+    try {
+      const token = localStorage.getItem("authToken");
+      const bidderId = JSON.parse(atob(token.split(".")[1])).sub;
 
-    return(
-        <div className="auction-container">
-            <h2 className="auction-title">{auction.itemName}</h2>
+      const body = {
+        auctionId: Number(auctionId),
+        bidderId: Number(bidderId),
+        amount: Number(amount),
+      };
 
-            <p className="label-row">Starting Price: ${auction.startPrice}</p>
-            <p className="label-row">Highest Bid: ${currentHighestBid}</p>
-            <p className="label-row">Time Remaining: {remaining}</p>
+      const res = await fetch("http://localhost:8080/api/auction/bid", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
 
-            <BidForm auctionId={auctionId} currentHighestBid={currentHighestBid}/>
+      if (!res.ok) {
+        throw new Error();
+      }
 
-            <button
-                className="button-primary"
-                onClick={() => {
-                    const userId = Number(localStorage.getItem("userId"));
-                    if(userId !== auction.highestBidderId){
-                        alert("Only the winner of the auction can proceed to payment.");
-                        return;
-                    }
-                    window.location.href = `/auction/${auctionId}/payment`;
-                }}
-            >Proceed to payment</button>
-        </div>
-    );
+      window.location.reload();
+    } catch (e) {
+      setError("Your bid could not be placed. Try again.");
+    }
+  }
+
+  if (!auction) {
+    return <p>Loading auction...</p>;
+  }
+
+  return (
+    <div style={{ padding: "20px", color: "white" }}>
+      <h1>{auction.itemName}</h1>
+
+      <p>Forward</p>
+
+      <p>Current price</p>
+      <strong>${auction.currentPrice}</strong>
+
+      <p>Highest bidder</p>
+      <strong>{auction.highestBidderName || "No bids yet"}</strong>
+
+      <p>Ends at</p>
+      <strong>{new Date(auction.endsAt).toLocaleString()}</strong>
+
+      <p>Remaining time</p>
+      <strong>{auction.remainingTime}</strong>
+
+      <h2>Description</h2>
+      <p>{auction.itemDescription}</p>
+
+      <h2>Place a bid</h2>
+      <input
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        style={{ width: "120px" }}
+      />
+      <button onClick={submitBid}>Submit bid</button>
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+    </div>
+  );
 }
+
 export default AuctionDetailPage;
