@@ -1,10 +1,19 @@
 import { useState } from "react";
 
-interface PaymentFormProps {
-  onSubmitPayment: (info: any) => void;
+export interface PaymentFormValues {
+  cardNumber: string;
+  nameOnCard: string;
+  expiryDate: string;
+  securityCode: string;
+  expeditedShipping: boolean;
 }
 
-function PaymentForm({ onSubmitPayment }: PaymentFormProps) {
+interface PaymentFormProps {
+  onSubmitPayment: (info: PaymentFormValues) => void | Promise<void>;
+  submitting?: boolean;
+}
+
+function PaymentForm({ onSubmitPayment, submitting = false }: PaymentFormProps) {
   const [cardNumber, setCardNumber] = useState("");
   const [nameOnCard, setNameOnCard] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
@@ -29,6 +38,10 @@ function PaymentForm({ onSubmitPayment }: PaymentFormProps) {
         <input
           value={cardNumber}
           onChange={(e) => setCardNumber(e.target.value)}
+          inputMode="numeric"
+          minLength={16}
+          maxLength={16}
+          required
         />
       </div>
 
@@ -37,6 +50,7 @@ function PaymentForm({ onSubmitPayment }: PaymentFormProps) {
         <input
           value={nameOnCard}
           onChange={(e) => setNameOnCard(e.target.value)}
+          required
         />
       </div>
 
@@ -46,6 +60,7 @@ function PaymentForm({ onSubmitPayment }: PaymentFormProps) {
           type="month"
           value={expiryDate}
           onChange={(e) => setExpiryDate(e.target.value)}
+          required
         />
       </div>
 
@@ -54,6 +69,10 @@ function PaymentForm({ onSubmitPayment }: PaymentFormProps) {
         <input
           value={securityCode}
           onChange={(e) => setSecurityCode(e.target.value)}
+          inputMode="numeric"
+          minLength={3}
+          maxLength={3}
+          required
         />
       </div>
 
@@ -66,7 +85,9 @@ function PaymentForm({ onSubmitPayment }: PaymentFormProps) {
         />
       </div>
 
-      <button type="submit">Submit Payment</button>
+      <button type="submit" disabled={submitting}>
+        {submitting ? 'Processing...' : 'Submit Payment'}
+      </button>
     </form>
   );
 }

@@ -71,14 +71,6 @@ interface CollectionModel<T> {
   };
 }
 
-// --- AUTH HEADER FIX ---
-function authHeader() {
-  const token = localStorage.getItem('authToken');
-  if (!token) return {};
-  return { Authorization: `Bearer ${token}` };
-}
-// ------------------------
-
 function buildSearchUrl({
   query = '',
   page = 0,
@@ -149,7 +141,7 @@ export async function fetchAuctionDetail(
   const response = await fetch(`${NORMALIZED_BASE}/api/auction/${auctionId}`, {
     signal,
     headers: {
-      ...authHeader(),
+      ...buildAuthHeaders(),
     },
   });
 
@@ -219,9 +211,6 @@ export async function fetchUserBids(signal?: AbortSignal): Promise<UserBidSummar
       ...buildAuthHeaders(),
     },
     signal,
-    headers: {
-      ...authHeader(),
-    },
   });
 
   if (!response.ok) {
