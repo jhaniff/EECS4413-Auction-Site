@@ -53,12 +53,22 @@ export interface UserBidSummary {
   lastBidAt: string;
 }
 
-interface SpringPage<T> {
-  content?: T[];
-  number?: number;
-  size?: number;
-  totalPages?: number;
-  totalElements?: number;
+interface PagedModel<T> {
+  _embedded?: {
+    auctions: T[];
+  };
+  page: {
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    number: number;
+  };
+}
+
+interface CollectionModel<T> {
+  _embedded?: {
+    bids: T[];
+  };
 }
 
 // --- AUTH HEADER FIX ---
@@ -90,26 +100,32 @@ export async function searchAuctions(
 ): Promise<AuctionSearchResponse> {
   const { signal, ...rest } = params;
 
-  const response = await fetch(buildSearchUrl(rest), {
-    signal,
-    headers: {
-      ...authHeader(),
-    },
+  const token = localStorage.getItem('authToken');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(buildSearchUrl(rest), { 
+    headers,
+    signal 
   });
 
   if (!response.ok) {
     throw new Error('Unable to load auctions right now. Please try again.');
   }
 
-  const raw = (await response.json()) as SpringPage<AuctionSummary>;
-  const items = raw.content ?? [];
+  const raw = (await response.json()) as PagedModel<AuctionSummary>;
+  const items = raw._embedded?.auctions ?? [];
 
   return {
     items,
-    page: raw.number ?? rest.page ?? 0,
-    size: raw.size ?? rest.size ?? 9,
-    totalPages: raw.totalPages ?? 0,
-    totalElements: raw.totalElements ?? items.length,
+    page: raw.page?.number ?? rest.page ?? 0,
+    size: raw.page?.size ?? rest.size ?? 9,
+    totalPages: raw.page?.totalPages ?? 0,
+    totalElements: raw.page?.totalElements ?? items.length,
   };
 }
 
@@ -144,7 +160,59 @@ export async function fetchAuctionDetail(
   return response.json() as Promise<AuctionDetail>;
 }
 
+export interface BidRequest {
+  auctionId: number;
+  amount: number;
+}
+
+export interface BidResponse {
+  auctionId: number;
+  newHighestBid: number;
+  highestBidderId: number;
+  highestBidderName: string;
+  updatedAt: string;
+  message: string;
+}
+
+export async function placeBid(payload: BidRequest): Promise<BidResponse> {
+  const token = localStorage.getItem('authToken');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${NORMALIZED_BASE}/api/auction/bid`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    let message = 'Unable to place bid.';
+    try {
+      const json = JSON.parse(text);
+      message = json.message || json.error || message;
+    } catch {
+      // ignore
+    }
+    throw new Error(message);
+  }
+
+  return response.json() as Promise<BidResponse>;
+}
+
 export async function fetchUserBids(signal?: AbortSignal): Promise<UserBidSummary[]> {
+  const token = localStorage.getItem('authToken');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${NORMALIZED_BASE}/api/auction/my-bids`, {
     headers: {
       'Content-Type': 'application/json',
@@ -160,5 +228,6 @@ export async function fetchUserBids(signal?: AbortSignal): Promise<UserBidSummar
     throw new Error('Unable to load your bids right now. Please try again.');
   }
 
-  return response.json() as Promise<UserBidSummary[]>;
+  const raw = (await response.json()) as CollectionModel<UserBidSummary>;
+  return raw._embedded?.bids ?? [];
 }

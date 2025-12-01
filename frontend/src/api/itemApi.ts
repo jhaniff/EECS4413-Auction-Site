@@ -9,6 +9,8 @@ export interface ItemPayload {
   shippingDays: number;
   baseShipCost: number;
   expeditedCost: number;
+  startPrice: number;
+  endsAt: string; // ISO-8601 string
   keywords?: string[];
 }
 
