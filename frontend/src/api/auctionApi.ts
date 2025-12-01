@@ -53,12 +53,22 @@ export interface UserBidSummary {
   lastBidAt: string;
 }
 
-interface SpringPage<T> {
-  content?: T[];
-  number?: number;
-  size?: number;
-  totalPages?: number;
-  totalElements?: number;
+interface PagedModel<T> {
+  _embedded?: {
+    auctions: T[];
+  };
+  page: {
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    number: number;
+  };
+}
+
+interface CollectionModel<T> {
+  _embedded?: {
+    bids: T[];
+  };
 }
 
 function buildSearchUrl({
@@ -99,15 +109,15 @@ export async function searchAuctions(
     throw new Error('Unable to load auctions right now. Please try again.');
   }
 
-  const raw = (await response.json()) as SpringPage<AuctionSummary>;
-  const items = raw.content ?? [];
+  const raw = (await response.json()) as PagedModel<AuctionSummary>;
+  const items = raw._embedded?.auctions ?? [];
 
   return {
     items,
-    page: raw.number ?? rest.page ?? 0,
-    size: raw.size ?? rest.size ?? 9,
-    totalPages: raw.totalPages ?? 0,
-    totalElements: raw.totalElements ?? items.length,
+    page: raw.page?.number ?? rest.page ?? 0,
+    size: raw.page?.size ?? rest.size ?? 9,
+    totalPages: raw.page?.totalPages ?? 0,
+    totalElements: raw.page?.totalElements ?? items.length,
   };
 }
 
@@ -204,5 +214,6 @@ export async function fetchUserBids(signal?: AbortSignal): Promise<UserBidSummar
     throw new Error('Unable to load your bids right now. Please try again.');
   }
 
-  return response.json() as Promise<UserBidSummary[]>;
+  const raw = (await response.json()) as CollectionModel<UserBidSummary>;
+  return raw._embedded?.bids ?? [];
 }
