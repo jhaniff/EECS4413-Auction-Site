@@ -9,6 +9,10 @@ import AuctionDetailPage from './pages/AuctionDetailPage';
 import UserBidsPage from './pages/UserBidsPage';
 import SellItemPage from './pages/SellItemPage';
 import './styles/app/App.css';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import AuctionDetailPage from "./pages/AuctionDetailPage";
+import PaymentPage from "./pages/PaymentPage";
+import ReceiptPage from "./pages/ReceiptPage";
 
 function App() {
   return (
@@ -28,6 +32,9 @@ function App() {
           <Route path="/auction/:auctionId" element={<AuctionDetailPage />} />
           <Route path="/bids" element={<UserBidsPage />} />
           <Route path="/sell" element={<SellItemPage />} />
+          <Route path="/auction/:auctionId" element={<AuctionDetailPage />} />
+          <Route path="/auction/:id/payment" element={<PaymentPage />} />
+          <Route path="/payment/:paymentId/receipt" element={<ReceiptPage />} />
 
         {/* fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
