@@ -43,7 +43,6 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
 type AuctionStatus = 'live' | 'ending' | 'scheduled' | 'ended';
 
 interface DerivedAuction extends AuctionSummary {
-  thumbnail: string;
   status: AuctionStatus;
   relativeTime: string;
   relativeTimeLabel: string;
@@ -142,11 +141,6 @@ function formatRelativeTime(auction: AuctionSummary): string {
   }
 
   return `${hours}h ${minutes.toString().padStart(2, '0')}m`;
-}
-
-function buildThumbnail(seed?: number) {
-  const normalized = typeof seed === 'number' ? seed : Math.floor(Math.random() * 10000);
-  return `https://images.unsplash.com/seed/catalogue-${normalized}/800x600?auto=format&fit=crop&w=800&q=80`;
 }
 
 function CataloguePage() {
@@ -287,7 +281,6 @@ function CataloguePage() {
 
       return {
         ...auction,
-        thumbnail: buildThumbnail(auction.itemId ?? auction.auctionId),
         status,
         relativeTime,
         relativeTimeLabel,
@@ -550,14 +543,13 @@ function CataloguePage() {
         {!error &&
           filteredAuctions.map((item) => (
             <article key={item.auctionId} className="catalogue-card">
-              <div className="card-image">
-                <img src={item.thumbnail} alt={item.itemName} loading="lazy" />
-                <span className={`status-badge status-${item.displayStatusClass}`}>
-                  {item.displayStatusLabel}
-                </span>
-              </div>
-
               <div className="card-body">
+                <div className="card-status">
+                  <span className={`status-badge status-${item.displayStatusClass}`}>
+                    {item.displayStatusLabel}
+                  </span>
+                  <span className="card-timer chip">{item.relativeTimeLabel}</span>
+                </div>
                 <div className="card-headline">
                   <div className="card-meta">
                     <span className="lot-id">#{item.auctionId}</span>

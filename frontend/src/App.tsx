@@ -9,8 +9,6 @@ import AuctionDetailPage from './pages/AuctionDetailPage';
 import UserBidsPage from './pages/UserBidsPage';
 import SellItemPage from './pages/SellItemPage';
 import './styles/app/App.css';
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AuctionDetailPage from "./pages/AuctionDetailPage";
 import PaymentPage from "./pages/PaymentPage";
 import ReceiptPage from "./pages/ReceiptPage";
 

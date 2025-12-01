@@ -93,12 +93,22 @@ function AuctionDetailPage() {
 
       <main className="catalogue-grid" style={{ display: 'block', maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
         <article className="catalogue-card" style={{ cursor: 'default' }}>
-            <div className="card-image" style={{ height: '400px' }}>
-                <img 
-                    src={`https://images.unsplash.com/seed/catalogue-${auction.auctionId}/800x600?auto=format&fit=crop&w=800&q=80`} 
-                    alt={auction.itemName} 
-                />
-            </div>
+          <div
+            className="card-image"
+            style={{
+              height: '200px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background:
+                'linear-gradient(135deg, rgba(8,47,73,0.08), rgba(8,47,73,0.18))',
+              border: '1px dashed rgba(8,47,73,0.2)'
+            }}
+          >
+            <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>
+              No image available
+            </span>
+          </div>
             <div className="card-body">
                 <div className="card-headline">
                     <h1>{auction.itemName}</h1>
