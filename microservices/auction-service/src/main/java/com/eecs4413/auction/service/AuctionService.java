@@ -207,4 +207,8 @@ public class AuctionService {
         summaries.sort(Comparator.comparing(UserBidSummaryDTO::getEndsAt));
         return summaries;
     }
+    public Auction getAuction(Long auctionId){
+          return auctionRepository.findById(auctionId)
+                  .orElseThrow(() -> new ResourceNotFoundException("Auction not found.  "));
+    }
 }

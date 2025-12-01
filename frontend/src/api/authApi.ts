@@ -105,7 +105,14 @@ export async function signIn(request: SignInRequest): Promise<AuthResponse> {
   return handleResponse<AuthResponse>(res);
 }
 
+export function authHeader() {
+  const token = localStorage.getItem("authToken");
+  if (!token) return {};
 
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
 
 // POST /api/auth/register
 export async function registerUser(
