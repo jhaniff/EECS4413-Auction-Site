@@ -17,7 +17,8 @@ It emphasizes maintainability, scalability, and adherence to software engineerin
 - **Spring Web / MVC** — handles REST APIs and routing  
 - **Spring Data JPA (Hibernate)** — object-relational mapping (ORM) for database access  
 - **Spring Security (JWT-based)** — authentication and authorization  
-- **PostgreSQL** — main relational database  
+- **PostgreSQL** — main relational database
+- **Flyway** — For database create and seed data
 - **Jakarta Validation** — input validation across controllers and DTOs  
 
 ### **Frontend (for D3)**
