@@ -40,6 +40,17 @@ function PaymentForm({ onSubmitPayment }: PaymentFormProps) {
         setErrors(newErrors);
         return valid;
      }
+     useEffect(() => {
+         const formIsValid =
+          /^\d{16}$/.test(cardNumber) &&
+          nameOnCard.trim().length > 0 &&
+          nameOnCard.length <= 50 &&
+          /^\d{3,4}$/.test(securityCode) &&
+          expiryDate !== "";
+
+          setIsFormValid(formIsValid);
+       },
+       [cardNumber, nameOnCard, securityCode, expiryDate]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
