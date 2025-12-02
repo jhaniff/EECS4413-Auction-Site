@@ -70,6 +70,34 @@
   box-shadow: 0 8px 30px rgba(23, 32, 90, 0.08);
 }
 
+.receipt-view {
+  max-width: 1000px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.back-button {
+  background: transparent;
+  border: 1px solid #cbd3f5;
+  color: #1b2c66;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: all 0.15s ease;
+}
+
+.back-button:hover {
+  border-color: #2e6edb;
+  color: #2e6edb;
+}
+
+.back-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(46, 110, 219, 0.2);
+}
+
 .payment-section {
   background: #ffffff;
   border-radius: 12px;
