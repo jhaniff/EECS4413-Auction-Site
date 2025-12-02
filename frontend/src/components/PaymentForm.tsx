@@ -18,6 +18,29 @@ function PaymentForm({ onSubmitPayment }: PaymentFormProps) {
       securityCode: ""
       )};
 
+    function validate() {
+        let valid = true;
+        const newErrors: any = {};
+
+        if (!/^\d{16}$/.test(cardNumber)) {
+          newErrors.cardNumber = "Card number must be exactly 16 digits.";
+          valid = false;
+        }
+
+        if (nameOnCard.trim().length === 0 || nameOnCard.length > 50) {
+          newErrors.nameOnCard = "Name must be 1–50 characters.";
+          valid = false;
+        }
+
+        if (!/^\d{3,4}$/.test(securityCode)) {
+          newErrors.securityCode = "Security code must be 3–4 digits.";
+          valid = false;
+        }
+
+        setErrors(newErrors);
+        return valid;
+     }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     onSubmitPayment({
