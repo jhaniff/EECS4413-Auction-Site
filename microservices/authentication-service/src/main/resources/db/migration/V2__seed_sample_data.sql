@@ -19,14 +19,16 @@ VALUES
   ('alice.seller@example.com',   '$2a$10$Qpsj6F1LjYQmP8o5hJatz.7Z5dPz0zKV0GylOeA4VxQXo4B5cQp2a', 'Alice',   'Anderson', TRUE),
   ('bob.bidder@example.com',     '$2a$10$Jcsx8QhYhWOf1ztgXQ8n0e.6td7m4dqcFvS7i9r5i5n9xJ1cAzvP6', 'Bob',     'Barton',   TRUE),
   ('charlie.collector@example.com', '$2a$10$yqA7mXZDkX68GxKQ7k6t1e2N5Z0m/7KJgE6r0cM6FlQ0N8r7uB4La', 'Charlie', 'Chen',     TRUE),
-  ('dana.dealer@example.com',    '$2a$10$af8.ByjG9gR98w0g7nVJ1uW8yWwJ7k4ZL8n5m6p9fS1yMz/4wVq2K', 'Dana',    'Diaz',     TRUE);
+  ('dana.dealer@example.com',    '$2a$10$af8.ByjG9gR98w0g7nVJ1uW8yWwJ7k4ZL8n5m6p9fS1yMz/4wVq2K', 'Dana',    'Diaz',     TRUE),
+  ('TESTGP@example.com', '{bcrypt}$2a$10$Nxi5roeMvsWFb1V6/LfMXOmYdjrwR5C3vcSd8vafjevitxklBaqQO', 'TESTGP', 'testlast', TRUE);
 
 INSERT INTO user_addresses (user_id, street_name, street_number, city, country, postal_code)
 VALUES
   ((SELECT user_id FROM users WHERE email = 'alice.seller@example.com'),    'Maple Ave',    '101', 'Toronto',  'Canada', 'M5H1T1'),
   ((SELECT user_id FROM users WHERE email = 'bob.bidder@example.com'),      'King St W',    '250', 'Toronto',  'Canada', 'M5V1J2'),
   ((SELECT user_id FROM users WHERE email = 'charlie.collector@example.com'),'Bank St',     '88',  'Ottawa',   'Canada', 'K1P5N5'),
-  ((SELECT user_id FROM users WHERE email = 'dana.dealer@example.com'),     'Saint Paul',   '432', 'Montreal', 'Canada', 'H3C1M8');
+  ((SELECT user_id FROM users WHERE email = 'dana.dealer@example.com'),     'Saint Paul',   '432', 'Montreal', 'Canada', 'H3C1M8'),
+  ((SELECT user_id FROM users WHERE email = 'TESTGP@example.com'),     'Saint Paul',   '436', 'Montreal', 'Canada', 'H3C1M8');;
 
 INSERT INTO items (seller_id, name, description, type, shipping_days, base_ship_cost, expedited_cost, is_sold)
 VALUES
@@ -45,7 +47,7 @@ VALUES
     7,
     18.50,
     32.00,
-    TRUE),
+    FALSE),
   ((SELECT user_id FROM users WHERE email = 'alice.seller@example.com'),
     'Designer Handbag',
     'Limited edition leather handbag with authenticity card.',
@@ -135,7 +137,7 @@ VALUES
    360,
    now() - INTERVAL '2 days'),
   ((SELECT auction_id FROM auctions WHERE item_id = (SELECT item_id FROM items WHERE name = 'Retro Console')),
-   (SELECT user_id FROM users WHERE email = 'charlie.collector@example.com'),
+   (SELECT user_id FROM users WHERE email = 'TESTGP@example.com'),
    420,
    now() - INTERVAL '1 day 20 hours');
 
@@ -160,23 +162,23 @@ UPDATE auctions
 SET status = 'CANCELLED', ends_at = now() - INTERVAL '4 hours'
 WHERE item_id = (SELECT item_id FROM items WHERE name = 'Designer Handbag');
 
-UPDATE items
-SET is_sold = TRUE
-WHERE name = 'Retro Console';
+--UPDATE items
+--SET is_sold = TRUE
+--WHERE name = 'Retro Console';
 
-INSERT INTO payments (
-  auction_id,
-  payee_id,
-  payment_date,
-  expected_delivery_date,
-  is_expedited)
-SELECT
-  a.auction_id,
-  a.highest_bidder,
-  now() - INTERVAL '6 hours',
-  now() + INTERVAL '5 days',
-  TRUE
-FROM auctions a
-WHERE a.item_id = (SELECT item_id FROM items WHERE name = 'Retro Console');
+--INSERT INTO payments (
+--  auction_id,
+--  payee_id,
+--  payment_date,
+--  expected_delivery_date,
+--  is_expedited)
+--SELECT
+--  a.auction_id,
+--  a.highest_bidder,
+--  now() - INTERVAL '6 hours',
+--  now() + INTERVAL '5 days',
+--  TRUE
+--FROM auctions a
+--WHERE a.item_id = (SELECT item_id FROM items WHERE name = 'Retro Console');
 
 COMMIT;

@@ -15,7 +15,6 @@ public class BidRequestDTO {
     @NotNull(message = "auctionId is required")
     private Long auctionId;
 
-    @NotNull(message = "bidderId is required")
     private Long bidderId;
 
     @NotNull(message = "amount is required")
