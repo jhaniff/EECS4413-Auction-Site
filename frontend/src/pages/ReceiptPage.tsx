@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { generateReceipt, type ReceiptResponse } from "../api/paymentAPI";
 import "../styles/auctionStyles.css";
 
@@ -14,7 +14,8 @@ const formatCurrency = (value?: number) => {
 };
 
 function ReceiptPage(){
-     const { paymentId } = useParams<{ paymentId: string }>();
+    const navigate = useNavigate();
+    const { paymentId } = useParams<{ paymentId: string }>();
      const [receipt, setReceipt] = useState<ReceiptResponse | null>(null);
      const [loading, setLoading] = useState(true);
      const [error, setError] = useState<string | null>(null);
@@ -69,7 +70,15 @@ function ReceiptPage(){
      }
 
     return(
-        <div className="receipt-layout">
+        <div className="receipt-view">
+            <button
+                type="button"
+                className="back-button"
+                onClick={() => navigate(-1)}
+            >
+                ← Back
+            </button>
+            <div className="receipt-layout">
             <div className="payment-section">
                 <h2 className="section-heading">Winning Bidder</h2>
                 <p className="info-line">First Name: {receipt.firstName}</p>
@@ -86,6 +95,7 @@ function ReceiptPage(){
                 <h2 className="section-heading">Shipping Details</h2>
                 <p className="info-line">Your order has been confirmed.</p>
                 <p className="info-line">Delivery Date: {receipt.shippingDate ? new Date(receipt.shippingDate).toLocaleDateString() : 'Pending'}</p>
+            </div>
             </div>
         </div>
     );
