@@ -10,6 +10,11 @@ function PaymentForm({ onSubmitPayment }: PaymentFormProps) {
   const [expiryDate, setExpiryDate] = useState("");
   const [securityCode, setSecurityCode] = useState("");
   const [expeditedShipping, setExpeditedShipping] = useState(false);
+  const [errors, setErrors] = useState({
+      cardNumber: "",
+      nameOnCard: "",
+      securityCode: ""
+      )};
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
