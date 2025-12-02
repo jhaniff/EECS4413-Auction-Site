@@ -1,15 +1,1 @@
-export async function placeBid(auctionId, amount){
-    const URL = "https://localhost:8080/auction/bid";
-    const bidderId = localStorage.getItem("userId");
-
-    const response = await fetch(URL, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            auctionId: Number(auctionId),
-            bidderId: Number(bidderId),
-            amount: Number(amount)
-        })
-    });
-    return response.json();
-}
+export { placeBid } from './auctionApi';

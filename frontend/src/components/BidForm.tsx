@@ -1,28 +1,36 @@
-import { useState } from 'react';
-import { placeBid } from '../api/bidAPI';
+import { useState, type FormEvent } from 'react';
+import { placeBid } from '../api/auctionApi';
 import "../styles/auctionStyles.css";
 
-function BidForm({auctionId, currentHighestBid}) {
+interface BidFormProps {
+    auctionId: string | number;
+    currentHighestBid: number;
+}
+
+function BidForm({auctionId, currentHighestBid}: BidFormProps) {
     const [amount, setAmount] = useState("");
     const [message, setMessage] = useState("");
 
-    async function handleSubmit(e) {
+    async function handleSubmit(e: FormEvent) {
         e.preventDefault();
         const bidAmount = Number(amount);
         if(bidAmount <= currentHighestBid){
             setMessage(`Your bid must be larger than $${currentHighestBid}`);
             return;
         }
-        const result = await placeBid(auctionId, bidAmount);
-        if(result.error){
-            setMessage(result.error);
-            return;
-        }
-        if(result.message){
-            setMessage(result.message);
-        }
-        if(result.newHighestBid){
+        try {
+            const result = await placeBid({
+                auctionId: Number(auctionId),
+                amount: bidAmount,
+            });
+            setMessage(result.message || "Bid placed successfully!");
             setAmount("");
+        } catch (err) {
+            if (err instanceof Error) {
+                setMessage(err.message);
+            } else {
+                setMessage('Unable to place bid right now.');
+            }
         }
     }
 

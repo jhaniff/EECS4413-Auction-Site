@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { createItem } from '../api/itemApi';
 import '../styles/pages/SellItemPage.css';
 
-const typeOptions = ['Forward', 'Dutch', 'Sealed'];
+const typeOptions = ['Forward'];
 
 const initialState = {
   name: '',
@@ -67,8 +67,11 @@ function SellItemPage() {
       };
 
       const item = await createItem(payload);
-      setSuccessMessage(`Item #${item.itemId} created successfully. You can now attach it to an auction.`);
+      setSuccessMessage(`Item #${item.itemId} created successfully. Redirecting to catalogue...`);
       setFormState(initialState);
+      setTimeout(() => {
+        navigate('/catalogue');
+      }, 1500);
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
