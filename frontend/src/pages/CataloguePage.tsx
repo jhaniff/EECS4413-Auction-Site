@@ -1,6 +1,9 @@
-import { type ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { type ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { searchAuctions, type AuctionSummary, type SortDirection } from '../api/auctionApi';
+import { searchAuctions, placeBid, type AuctionSummary, type SortDirection } from '../api/auctionApi';
+import { Client, type IMessage } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
+import { WS_ENDPOINT, isAuctionResultMessage, isBidUpdateMessage } from '../utils/socketHelpers';
 import '../styles/pages/CataloguePage.css';
 
 const PAGE_SIZE = 9;
@@ -159,6 +162,13 @@ function CataloguePage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [username, setUsername] = useState<string>(() => decodeJwtSubject(localStorage.getItem('authToken')) ?? 'Guest');
   const [selectedAuctionId, setSelectedAuctionId] = useState<number | null>(null);
+  const [quickBidAmount, setQuickBidAmount] = useState('');
+  const [quickBidError, setQuickBidError] = useState<string | null>(null);
+  const [quickBidSuccess, setQuickBidSuccess] = useState<string | null>(null);
+  const [placingQuickBid, setPlacingQuickBid] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(false);
+  const stompRef = useRef<Client | null>(null);
+  const lastSelectedAuctionIdRef = useRef<number | null>(null);
 
   useEffect(() => {
     setUsername(decodeJwtSubject(localStorage.getItem('authToken')) ?? 'Guest');
@@ -168,6 +178,28 @@ function CataloguePage() {
     const timer = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 350);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  useEffect(() => {
+    const client = new Client({
+      reconnectDelay: 4000,
+      webSocketFactory: () => new SockJS(WS_ENDPOINT),
+    });
+
+    client.onConnect = () => setSocketConnected(true);
+    client.onDisconnect = () => setSocketConnected(false);
+    client.onStompError = (frame) => {
+      console.error('Catalogue WebSocket error', frame.headers['message']);
+    };
+
+    client.activate();
+    stompRef.current = client;
+
+    return () => {
+      setSocketConnected(false);
+      client.deactivate();
+      stompRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     setPage(0);
@@ -326,6 +358,51 @@ function CataloguePage() {
     }
   }, [filteredAuctions, selectedAuctionId]);
 
+  const selectedAuction = useMemo(() => {
+    if (selectedAuctionId === null) {
+      return null;
+    }
+    return filteredAuctions.find((auction) => auction.auctionId === selectedAuctionId) ?? null;
+  }, [filteredAuctions, selectedAuctionId]);
+  const selectedAuctionPrice = selectedAuction?.currentPrice ?? null;
+
+  useEffect(() => {
+    if (!selectedAuction) {
+      if (lastSelectedAuctionIdRef.current !== null) {
+        lastSelectedAuctionIdRef.current = null;
+      }
+      setQuickBidAmount('');
+      setQuickBidError(null);
+      setQuickBidSuccess(null);
+      return;
+    }
+
+    if (lastSelectedAuctionIdRef.current === selectedAuction.auctionId) {
+      return;
+    }
+
+    lastSelectedAuctionIdRef.current = selectedAuction.auctionId;
+    const minBid = (selectedAuction.currentPrice ?? 0) + 1;
+    setQuickBidError(null);
+    setQuickBidSuccess(null);
+    setQuickBidAmount(String(minBid));
+  }, [selectedAuction]);
+
+  useEffect(() => {
+    if (!selectedAuction) {
+      return;
+    }
+    const currentPrice = selectedAuctionPrice ?? 0;
+    const minBid = currentPrice + 1;
+    setQuickBidAmount((prev) => {
+      const parsed = Number(prev);
+      if (!Number.isFinite(parsed) || parsed <= currentPrice) {
+        return String(minBid);
+      }
+      return prev;
+    });
+  }, [selectedAuction, selectedAuctionPrice]);
+
   const heroStats = useMemo(() => {
     const closingSoon = derivedAuctions.filter((auction) => auction.status === 'ending').length;
     const highestBid = derivedAuctions.reduce(
@@ -369,11 +446,55 @@ function CataloguePage() {
     navigate(`/auction/${auctionId}`);
   };
 
-  const handleBidOnSelected = () => {
-    if (selectedAuctionId === null) {
+  const handleQuickBidSubmit = async () => {
+    if (!selectedAuction || selectedAuction.status === 'ended') {
       return;
     }
-    handleViewAuction(selectedAuctionId);
+
+    const minBid = (selectedAuction.currentPrice ?? 0) + 1;
+    const parsedAmount = Number(quickBidAmount);
+
+    if (!Number.isFinite(parsedAmount)) {
+      setQuickBidError('Enter a valid bid amount.');
+      setQuickBidSuccess(null);
+      return;
+    }
+
+    if (parsedAmount < minBid) {
+      setQuickBidError(`Bid must be at least ${formatCurrency(minBid)}.`);
+      setQuickBidSuccess(null);
+      return;
+    }
+
+    setPlacingQuickBid(true);
+    setQuickBidError(null);
+    setQuickBidSuccess(null);
+
+    try {
+      const response = await placeBid({
+        auctionId: selectedAuction.auctionId,
+        amount: parsedAmount,
+      });
+
+      setQuickBidSuccess(response.message ?? 'Bid placed successfully.');
+      setAuctions((prev) =>
+        prev.map((auction) =>
+          auction.auctionId === response.auctionId
+            ? {
+                ...auction,
+                currentPrice: response.newHighestBid,
+              }
+            : auction,
+        ),
+      );
+      setQuickBidAmount(String(response.newHighestBid + 1));
+    } catch (err) {
+      setQuickBidError(
+        err instanceof Error ? err.message : 'Unable to submit your bid right now. Please retry.',
+      );
+    } finally {
+      setPlacingQuickBid(false);
+    }
   };
 
   const handleRetry = () => {
@@ -398,15 +519,86 @@ function CataloguePage() {
     navigate('/auth?mode=signin');
   };
 
+  const handleSocketPayload = useCallback((payload: unknown) => {
+    if (isBidUpdateMessage(payload)) {
+      setAuctions((prev) =>
+        prev.map((auction) =>
+          auction.auctionId === payload.auctionId
+            ? {
+                ...auction,
+                currentPrice: payload.newHighestBid,
+              }
+            : auction,
+        ),
+      );
+      return;
+    }
+
+    if (isAuctionResultMessage(payload)) {
+      setAuctions((prev) =>
+        prev.map((auction) =>
+          auction.auctionId === payload.auctionId
+            ? {
+                ...auction,
+                currentPrice: payload.winningBid,
+                remainingTime: 'Ended',
+                endsAt: payload.finalizedAt ?? auction.endsAt,
+              }
+            : auction,
+        ),
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    const client = stompRef.current;
+    if (!client || !socketConnected) {
+      return undefined;
+    }
+
+    const uniqueIds = Array.from(new Set(auctions.map((auction) => auction.auctionId)));
+    if (uniqueIds.length === 0) {
+      return undefined;
+    }
+
+    const subscriptions = uniqueIds.map((auctionId) =>
+      client.subscribe(`/topic/auction/${auctionId}`, (message: IMessage) => {
+        try {
+          const parsed = JSON.parse(message.body);
+          handleSocketPayload(parsed);
+        } catch (err) {
+          console.error('Failed to parse catalogue update payload', err);
+        }
+      }),
+    );
+
+    return () => {
+      subscriptions.forEach((subscription) => subscription.unsubscribe());
+    };
+  }, [auctions, handleSocketPayload, socketConnected]);
+
   const activeQuery = debouncedSearch || searchTerm.trim();
   const emptyStateMessage = activeQuery
     ? `No active auctions found for '${activeQuery}'`
     : 'No active auctions match your filters yet.';
 
-  const canBidOnSelected = selectedAuctionId !== null;
-  const footerMessage = canBidOnSelected
-    ? `Lot #${selectedAuctionId} selected`
-    : 'Select an auction above to enable bidding';
+  const minQuickBid = selectedAuction ? (selectedAuction.currentPrice ?? 0) + 1 : 0;
+  const canBidOnSelected = selectedAuction !== null && selectedAuction.status !== 'ended';
+  const footerMessage = selectedAuction
+    ? `Lot #${selectedAuction.auctionId} • Current ${formatCurrency(selectedAuction.currentPrice)} • ${selectedAuction.relativeTimeLabel}`
+    : 'Select an auction above to enable quick bidding';
+  const quickBidHintText = quickBidError
+    ? quickBidError
+    : quickBidSuccess
+      ? quickBidSuccess
+      : selectedAuction
+        ? `Minimum quick bid ${formatCurrency(minQuickBid)}.`
+        : 'Choose a lot to enable bidding.';
+  const quickBidHintClass = quickBidError
+    ? 'quick-bid-hint quick-bid-hint--error'
+    : quickBidSuccess
+      ? 'quick-bid-hint quick-bid-hint--success'
+      : 'quick-bid-hint';
 
   return (
     <div className="catalogue-page">
@@ -654,13 +846,32 @@ function CataloguePage() {
         <div className="footer-selection" role="status" aria-live="polite">
           {footerMessage}
         </div>
+        <div className="quick-bid-control">
+          <label htmlFor="quick-bid-input" className="quick-bid-label">
+            Quick bid amount
+          </label>
+          <div className="quick-bid-field">
+            <span>$</span>
+            <input
+              id="quick-bid-input"
+              type="number"
+              min={minQuickBid || 0}
+              step={1}
+              value={quickBidAmount}
+              onChange={(event) => setQuickBidAmount(event.target.value)}
+              disabled={!canBidOnSelected || placingQuickBid}
+              placeholder={selectedAuction ? String(minQuickBid) : '--'}
+            />
+          </div>
+          <p className={quickBidHintClass}>{quickBidHintText}</p>
+        </div>
         <button
           type="button"
-          className="footer-bid-btn"
-          disabled={!canBidOnSelected}
-          onClick={handleBidOnSelected}
+          className="quick-bid-btn"
+          disabled={!canBidOnSelected || placingQuickBid}
+          onClick={handleQuickBidSubmit}
         >
-          Bid on selected item
+          {placingQuickBid ? 'Submitting...' : 'Place quick bid'}
         </button>
       </footer>
     </div>

@@ -1,12 +1,13 @@
 package com.eecs4413.auction.dto;
 
+import java.time.OffsetDateTime;
+
+import org.springframework.hateoas.server.core.Relation;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.hateoas.server.core.Relation;
-
-import java.time.OffsetDateTime;
 
 @Data
 @Builder
@@ -21,6 +22,8 @@ public class UserBidSummaryDTO {
     private int userBidAmount;
     private String status;
     private boolean winning;
+    private boolean paid;
+    private Long paymentId;
     private OffsetDateTime endsAt;
     private OffsetDateTime lastBidAt;
 }

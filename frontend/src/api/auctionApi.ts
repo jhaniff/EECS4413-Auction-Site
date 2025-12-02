@@ -49,6 +49,8 @@ export interface UserBidSummary {
   userBidAmount: number;
   status: string;
   winning: boolean;
+  paid?: boolean;
+  paymentId?: number | null;
   endsAt: string;
   lastBidAt: string;
 }

@@ -596,7 +596,67 @@
   color: rgba(226, 232, 240, 0.9);
 }
 
-.footer-bid-btn {
+.quick-bid-control {
+  flex: 1 1 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.quick-bid-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(226, 232, 240, 0.7);
+}
+
+.quick-bid-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.75);
+}
+
+.quick-bid-field span {
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.quick-bid-field input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #f8fafc;
+  font-size: 1rem;
+}
+
+.quick-bid-field input:focus {
+  outline: none;
+}
+
+.quick-bid-field input:disabled {
+  opacity: 0.6;
+}
+
+.quick-bid-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.quick-bid-hint--error {
+  color: #fecaca;
+}
+
+.quick-bid-hint--success {
+  color: #4ade80;
+}
+
+.quick-bid-btn {
   border-radius: 18px;
   padding: 14px 32px;
   border: none;
@@ -609,13 +669,13 @@
   transition: transform 0.1s ease;
 }
 
-.footer-bid-btn:disabled {
+.quick-bid-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
   box-shadow: none;
 }
 
-.footer-bid-btn:not(:disabled):hover {
+.quick-bid-btn:not(:disabled):hover {
   transform: translateY(-2px);
 }
 
@@ -645,7 +705,7 @@
     align-items: stretch;
   }
 
-  .footer-bid-btn {
+  .quick-bid-btn {
     width: 100%;
     text-align: center;
   }
