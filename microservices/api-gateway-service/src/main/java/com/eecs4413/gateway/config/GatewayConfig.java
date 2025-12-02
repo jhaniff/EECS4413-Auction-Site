@@ -1,18 +1,17 @@
 package com.eecs4413.gateway.config;
 
-import com.eecs4413.gateway.filter.AuthenticationFilter;
-import lombok.RequiredArgsConstructor;
-import org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.function.RequestPredicate;
-import org.springframework.web.servlet.function.RouterFunction;
-import org.springframework.web.servlet.function.ServerResponse;
-
 import static org.springframework.cloud.gateway.server.mvc.filter.BeforeFilterFunctions.uri;
 import static org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions.route;
 import static org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.http;
-import static org.springframework.cloud.gateway.server.mvc.predicate.GatewayRequestPredicates.*;
+import static org.springframework.cloud.gateway.server.mvc.predicate.GatewayRequestPredicates.path;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.function.RouterFunction;
+import org.springframework.web.servlet.function.ServerResponse;
+
+import com.eecs4413.gateway.filter.AuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
 
 
 @Configuration
@@ -54,6 +53,11 @@ public class GatewayConfig {
                         .POST("/api/auth/forgot", http())
                         .POST("/api/auth/forgot/reset", http())
                         .POST("/api/auth/register", http())
+                        .before(uri("lb://authentication-service"))
+                        .build())
+
+                .and(route("oauth2_route")
+                        .route(path("/oauth2/**").or(path("/login/oauth2/**")), http())
                         .before(uri("lb://authentication-service"))
                         .build());
     }
