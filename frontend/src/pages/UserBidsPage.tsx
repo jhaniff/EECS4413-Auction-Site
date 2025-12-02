@@ -74,8 +74,11 @@ function UserBidsPage() {
 
   const handleRefresh = () => setRefreshIndex((value) => value + 1);
 
-  const renderBidCard = (summary: UserBidSummary) => (
-    <article key={summary.auctionId} className="user-bid-card">
+  const renderBidCard = (summary: UserBidSummary) => {
+    const showPaymentLink = summary.status === 'ENDED' && summary.winning;
+
+    return (
+      <article key={summary.auctionId} className="user-bid-card">
       <div className="user-bid-card__heading">
         <div>
           <p className="label">Lot #{summary.itemId}</p>
@@ -109,9 +112,15 @@ function UserBidsPage() {
         <Link to="/catalogue" className="inline-link">
           Continue browsing
         </Link>
+        {showPaymentLink && (
+          <Link to={`/auction/${summary.auctionId}/payment`} className="user-bid-card__pay-link">
+            Complete payment
+          </Link>
+        )}
       </footer>
-    </article>
-  );
+      </article>
+    );
+  };
 
   return (
     <div className="user-bids-page">
