@@ -53,6 +53,7 @@ function PaymentForm({ onSubmitPayment }: PaymentFormProps) {
        [cardNumber, nameOnCard, securityCode, expiryDate]);
 
   function handleSubmit(e: React.FormEvent) {
+    if (!validate()) return;
     e.preventDefault();
     onSubmitPayment({
       cardNumber,
