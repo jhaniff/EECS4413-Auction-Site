@@ -15,7 +15,6 @@ import java.time.OffsetDateTime;
 public class PaymentRequestDTO {
      private Long auctionID;
      private Long paymentID;
-     private User user;
      private String firstName;
      private String lastName;
      private String streetName;

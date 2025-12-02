@@ -2,11 +2,9 @@ package com.eecs4413.payment.service;
 
 import com.eecs4413.payment.dto.*;
 import com.eecs4413.payment.exception.ResourceNotFoundException;
-import com.eecs4413.payment.model.Auction;
-import com.eecs4413.payment.model.Bid;
-import com.eecs4413.payment.model.Payment;
-import com.eecs4413.payment.model.User;
+import com.eecs4413.payment.model.*;
 import com.eecs4413.payment.repository.AuctionRepository;
+import com.eecs4413.payment.repository.ItemRepository;
 import com.eecs4413.payment.repository.PaymentRepository;
 import com.eecs4413.payment.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -18,14 +16,17 @@ import java.util.List;
 
 @Service
 public class PaymentService {
-     PaymentRepository paymentRepository;
-     AuctionRepository auctionRepository;
-     UserRepository userRepository;
+     private PaymentRepository paymentRepository;
+     private AuctionRepository auctionRepository;
+     private UserRepository userRepository;
+     private ItemRepository itemRepository;
 
-     public PaymentService(AuctionRepository auctionRepository, UserRepository userRepository, PaymentRepository paymentRepository ){
+
+     public PaymentService(AuctionRepository auctionRepository, UserRepository userRepository, PaymentRepository paymentRepository, ItemRepository itemRepository ){
           this.auctionRepository = auctionRepository;
           this.paymentRepository = paymentRepository;
           this.userRepository = userRepository;
+          this.itemRepository = itemRepository;
      }
 
      public PaymentDetailDTO getPaymentDetails(Long paymentID, Long userId) {
@@ -61,12 +62,26 @@ public class PaymentService {
      @Transactional
      public PaymentResponseDTO placePayment(PaymentRequestDTO paymentRequestDTO, Long userId){
           try{
+               if(paymentRequestDTO.getCardNumber().length() !=  16) {
+                    throw new IllegalArgumentException("Invalid credit card number.  ");
+               }
+               if(paymentRequestDTO.getExpiryDate().isBefore(OffsetDateTime.now())) {
+                    throw new IllegalArgumentException("Invalid expiry date.  ");
+               }
+               if(paymentRequestDTO.getSecurityCode().length() !=  3) {
+                    throw new IllegalArgumentException("Invalid security code.  ");
+               }
                Auction auction = auctionRepository.findById(paymentRequestDTO.getAuctionID())
                        .orElseThrow(() -> new ResourceNotFoundException("Auction not found"));
                auction = auctionRepository.findById(auction.getAuctionId()).get();
                if(userId != auction.getHighestBidder().getUserId()){
                     throw new IllegalArgumentException("Wrong user trying to place payment");
                }
+               Item item = auction.getItem();
+               if(item.isSold()){
+                    throw new IllegalArgumentException("Item already sold");
+               }
+
                // Validate auction state
                OffsetDateTime now = OffsetDateTime.now();
                if (auction.getEndsAt().isAfter(now)) {
@@ -88,17 +103,13 @@ public class PaymentService {
                        .expectedDeliveryDate(expectedDelivery)
                        .isExpedited(paymentRequestDTO.isExpedited())
                        .build();
-               if(paymentRequestDTO.getCardNumber().length() !=  16) {
-                    throw new IllegalArgumentException("Invalid credit card number.  ");
-               }
-               if(paymentRequestDTO.getExpiryDate().isBefore(OffsetDateTime.now())) {
-                    throw new IllegalArgumentException("Invalid expiry date.  ");
-               }
-               if(paymentRequestDTO.getSecurityCode().length() !=  3) {
-                    throw new IllegalArgumentException("Invalid security code.  ");
-               }
+
                paymentRepository.save(payment);
-               createReceipt(payment, userId);
+
+               item.setSold(true);
+               itemRepository.save(item);
+
+//               createReceipt(payment.getPaymentID(), userId);
 
                PaymentResponseDTO paymentResponseDTO =  PaymentResponseDTO.builder()
                        .paymentID(payment.getPaymentID())
@@ -116,10 +127,10 @@ public class PaymentService {
           }
      }
      @Transactional
-     public ReceiptResponseDTO createReceipt(Payment payment, Long userId){
+     public ReceiptResponseDTO createReceipt(Long paymentId, Long userId){
 
           try {
-               Payment storedPayment = paymentRepository.findDetailedById(payment.getPaymentID())
+               Payment storedPayment = paymentRepository.findDetailedById(paymentId)
                        .orElseThrow(() -> new IllegalArgumentException("Payment not found.  "));
 
                if(storedPayment.getPayee().getUserId() != userId){

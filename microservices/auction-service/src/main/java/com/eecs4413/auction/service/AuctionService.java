@@ -53,6 +53,10 @@ public class AuctionService {
         try{
             Auction auction = auctionRepository.findById(bidRequestDTO.getAuctionId())
                     .orElseThrow(() -> new ResourceNotFoundException("Auction not found for Id: " + bidRequestDTO.getAuctionId()));
+
+            if(userId == auction.getItem().getSeller().getUserId()){
+                throw new InvalidBidException("Seller can't bid on their own auction");
+            }
             // Validate auction state
             OffsetDateTime now = OffsetDateTime.now();
             if (auction.getEndsAt().isBefore(now)) {
@@ -65,6 +69,7 @@ public class AuctionService {
             // Find bidder
             User bidder = userRepository.findById(userId)
                     .orElseThrow(() -> new InvalidBidException("Bidder not found of Id: " + userId));
+
             // Save bid
             Bid bid = Bid.builder()
                     .auction(auction)

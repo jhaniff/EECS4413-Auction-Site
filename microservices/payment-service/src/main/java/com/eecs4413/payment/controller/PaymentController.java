@@ -59,7 +59,7 @@ public class PaymentController {
              @AuthenticationPrincipal UserPrincipal user) {
 
           ReceiptResponseDTO receipt =
-                  paymentService.createReceipt(payment, user.getUser().getUserId());
+                  paymentService.createReceipt(payment.getPaymentID(), user.getUser().getUserId());
 
           EntityModel<ReceiptResponseDTO> model =
                   paymentAssembler.toReceiptModel(receipt, payment.getPaymentID());
