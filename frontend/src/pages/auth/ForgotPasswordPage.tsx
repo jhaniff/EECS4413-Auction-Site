@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { FormEvent, ChangeEvent, FocusEvent } from 'react';
+import type { FormEvent, ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { requestPasswordReset } from '../../api/authApi';
 
@@ -55,7 +55,7 @@ function ForgotPasswordPage() {
     runValidation(value);
   };
 
-  const handleEmailBlur = (_e: FocusEvent<HTMLInputElement>) => {
+  const handleEmailBlur = () => {
     setTouched((prev) => ({ ...prev, email: true }));
     runValidation();
   };

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { FormEvent, ChangeEvent, FocusEvent } from 'react';
+import type { FormEvent, ChangeEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { signIn } from '../../api/authApi';
 
@@ -118,7 +118,7 @@ function SignInForm() {
   // Blur handler to mark a field as touched and re-run validation
   const handleBlur =
     (field: keyof TouchedState) =>
-    (_e: FocusEvent<HTMLInputElement>): void => {
+    (): void => {
       setTouched((prev) => ({ ...prev, [field]: true }));
       runValidation(); // validate whole form on blur
     };

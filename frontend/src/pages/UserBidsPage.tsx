@@ -80,6 +80,12 @@ function UserBidsPage() {
 
   const renderBidCard = (summary: UserBidSummary) => {
     const showPaymentLink = isEndedStatus(summary.status) && summary.winning;
+    const hasCompletedOrder =
+      showPaymentLink && Boolean(summary.paid) && typeof summary.paymentId === 'number';
+    const actionHref = hasCompletedOrder
+      ? `/payment/${summary.paymentId as number}/receipt`
+      : `/auction/${summary.auctionId}/payment`;
+    const actionLabel = hasCompletedOrder ? 'View order' : 'Complete payment';
 
     return (
       <article key={summary.auctionId} className="user-bid-card">
@@ -117,8 +123,8 @@ function UserBidsPage() {
           Continue browsing
         </Link>
         {showPaymentLink && (
-          <Link to={`/auction/${summary.auctionId}/payment`} className="user-bid-card__pay-link">
-            Complete payment
+          <Link to={actionHref} className={`user-bid-card__pay-link${hasCompletedOrder ? ' user-bid-card__pay-link--secondary' : ''}`}>
+            {actionLabel}
           </Link>
         )}
       </footer>

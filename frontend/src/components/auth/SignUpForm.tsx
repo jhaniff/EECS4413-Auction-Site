@@ -1,9 +1,4 @@
-import {
-  useState,
-  type FormEvent,
-  type ChangeEvent,
-  type FocusEvent,
-} from 'react';
+import { useState, type FormEvent, type ChangeEvent } from 'react';
 import {
   registerUser,
   type RegisterRequest,
@@ -250,7 +245,7 @@ function SignUpForm({ onSignedUp }: SignUpFormProps) {
 
   const handleBlur =
     (field: keyof TouchedState) =>
-    (_e: FocusEvent<HTMLInputElement>) => {
+    () => {
       setTouched((prev) => ({ ...prev, [field]: true }));
       runValidation();
     };

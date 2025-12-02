@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchAuctionDetail, placeBid, type AuctionDetail } from '../api/auctionApi';
+import { Client, type IMessage } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
+import { WS_ENDPOINT, isAuctionResultMessage, isBidUpdateMessage } from '../utils/socketHelpers';
 import '../styles/pages/CataloguePage.css'; // Reuse styles for now
 
 function AuctionDetailPage() {
@@ -13,6 +16,8 @@ function AuctionDetailPage() {
   const [bidError, setBidError] = useState<string | null>(null);
   const [bidSuccess, setBidSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(false);
+  const stompRef = useRef<Client | null>(null);
 
   useEffect(() => {
     if (!auctionId) return;
@@ -29,6 +34,79 @@ function AuctionDetailPage() {
 
     return () => controller.abort();
   }, [auctionId]);
+
+  useEffect(() => {
+    const client = new Client({
+      reconnectDelay: 4000,
+      webSocketFactory: () => new SockJS(WS_ENDPOINT),
+    });
+
+    client.onConnect = () => setSocketConnected(true);
+    client.onDisconnect = () => setSocketConnected(false);
+    client.onStompError = (frame) => {
+      console.error('STOMP error on auction detail page', frame.headers['message']);
+    };
+    client.activate();
+    stompRef.current = client;
+
+    return () => {
+      setSocketConnected(false);
+      client.deactivate();
+      stompRef.current = null;
+    };
+  }, []);
+
+  const handleSocketPayload = useCallback((payload: unknown) => {
+    if (isBidUpdateMessage(payload)) {
+      setAuction((prev) => {
+        if (!prev || prev.auctionId !== payload.auctionId) {
+          return prev;
+        }
+        return {
+          ...prev,
+          currentPrice: payload.newHighestBid,
+          highestBidderId: payload.highestBidderId,
+          highestBidderName: payload.highestBidderName ?? prev.highestBidderName,
+        };
+      });
+      setBidSuccess(payload.message ?? 'Bid update received');
+      return;
+    }
+
+    if (isAuctionResultMessage(payload)) {
+      setAuction((prev) => {
+        if (!prev || prev.auctionId !== payload.auctionId) {
+          return prev;
+        }
+        return {
+          ...prev,
+          currentPrice: payload.winningBid,
+          highestBidderName: payload.winnerName ?? prev.highestBidderName,
+          remainingTime: 'Ended',
+          endsAt: payload.finalizedAt ?? prev.endsAt,
+        };
+      });
+      return;
+    }
+  }, []);
+
+  useEffect(() => {
+    const client = stompRef.current;
+    if (!client || !socketConnected || !auctionId) {
+      return undefined;
+    }
+
+    const subscription = client.subscribe(`/topic/auction/${auctionId}`, (message: IMessage) => {
+      try {
+        const parsed = JSON.parse(message.body);
+        handleSocketPayload(parsed);
+      } catch (err) {
+        console.error('Failed to parse auction update payload', err);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [auctionId, handleSocketPayload, socketConnected]);
 
   const handleBid = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,22 +171,6 @@ function AuctionDetailPage() {
 
       <main className="catalogue-grid" style={{ display: 'block', maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
         <article className="catalogue-card" style={{ cursor: 'default' }}>
-          <div
-            className="card-image"
-            style={{
-              height: '200px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background:
-                'linear-gradient(135deg, rgba(8,47,73,0.08), rgba(8,47,73,0.18))',
-              border: '1px dashed rgba(8,47,73,0.2)'
-            }}
-          >
-            <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>
-              No image available
-            </span>
-          </div>
             <div className="card-body">
                 <div className="card-headline">
                     <h1>{auction.itemName}</h1>

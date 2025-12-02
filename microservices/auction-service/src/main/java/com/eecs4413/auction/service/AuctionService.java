@@ -9,6 +9,7 @@ import com.eecs4413.auction.model.Bid;
 import com.eecs4413.auction.model.User;
 import com.eecs4413.auction.repository.AuctionRepository;
 import com.eecs4413.auction.repository.BidRepository;
+import com.eecs4413.auction.repository.PaymentRepository;
 import com.eecs4413.auction.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -27,12 +28,19 @@ public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final UserRepository userRepository;
     private final BidRepository bidRepository;
+    private final PaymentRepository paymentRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
-    public AuctionService(AuctionRepository auctionRepository, UserRepository userRepository, BidRepository bidRepository, SimpMessagingTemplate messagingTemplate){
+    public AuctionService(
+            AuctionRepository auctionRepository,
+            UserRepository userRepository,
+            BidRepository bidRepository,
+            PaymentRepository paymentRepository,
+            SimpMessagingTemplate messagingTemplate){
         this.auctionRepository = auctionRepository;
         this.userRepository = userRepository;
         this.bidRepository = bidRepository;
+        this.paymentRepository = paymentRepository;
         this.messagingTemplate = messagingTemplate;
     }
 
@@ -54,7 +62,7 @@ public class AuctionService {
             Auction auction = auctionRepository.findById(bidRequestDTO.getAuctionId())
                     .orElseThrow(() -> new ResourceNotFoundException("Auction not found for Id: " + bidRequestDTO.getAuctionId()));
 
-            if(userId == auction.getItem().getSeller().getUserId()){
+            if(Objects.equals(userId, auction.getItem().getSeller().getUserId())){
                 throw new InvalidBidException("Seller can't bid on their own auction");
             }
             // Validate auction state
@@ -196,7 +204,12 @@ public class AuctionService {
                     .max(OffsetDateTime::compareTo)
                     .orElse(representative.getPlacedAt());
 
-            summaries.add(UserBidSummaryDTO.builder()
+                Long paymentId = paymentRepository
+                    .findTopByAuction_AuctionIdAndPayee_UserIdOrderByPaymentDateDesc(auction.getAuctionId(), userId)
+                    .map(payment -> payment.getPaymentID())
+                    .orElse(null);
+
+                summaries.add(UserBidSummaryDTO.builder()
                     .auctionId(auction.getAuctionId())
                     .itemId(auction.getItem().getItemId())
                     .itemName(auction.getItem().getName())
@@ -204,6 +217,8 @@ public class AuctionService {
                     .userBidAmount(userBidAmount)
                     .status(auction.getStatus())
                     .winning(userWinning)
+                    .paid(paymentId != null)
+                    .paymentId(paymentId)
                     .endsAt(auction.getEndsAt())
                     .lastBidAt(lastBidAt)
                     .build());
