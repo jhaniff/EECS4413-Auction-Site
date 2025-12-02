@@ -138,10 +138,9 @@ public class AuctionService {
                 .auctionType(auction.getItem().getType())
                 .itemDescription(auction.getItem().getDescription())
                 .itemName(auction.getItem().getName())
-                .highestBidderId(auction.getHighestBidder().getUserId())
-                .highestBidderName(
-                        auction.getHighestBidder().getFirstName() + " " +
-                                auction.getHighestBidder().getLastName()
+                .highestBidderId(auction.getHighestBidder() != null ? auction.getHighestBidder().getUserId(): null)
+                .highestBidderName( auction.getHighestBidder() != null ? auction.getHighestBidder().getFirstName() + " " +
+                        auction.getHighestBidder().getLastName() : ""
                 )
                 .currentPrice(auction.getCurrentPrice())
                 .startPrice(auction.getStartPrice())
