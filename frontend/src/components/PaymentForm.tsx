@@ -65,51 +65,66 @@ function PaymentForm({ onSubmitPayment }: PaymentFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label>Card Number</label>
-        <input
-          value={cardNumber}
-          onChange={(e) => setCardNumber(e.target.value)}
-        />
-      </div>
+    <form className="payment-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label">Card Number</label>
+            <input
+              className="payment-input"
+              maxLength={16}
+              value={cardNumber}
+              onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, ""))}
+            />
+            {errors.cardNumber && <p className="error-text">{errors.cardNumber}</p>}
+          </div>
 
-      <div>
-        <label>Name on Card</label>
-        <input
-          value={nameOnCard}
-          onChange={(e) => setNameOnCard(e.target.value)}
-        />
-      </div>
+          <div className="form-group">
+            <label className="form-label">Name on Card</label>
+            <input
+              className="payment-input"
+              maxLength={50}
+              value={nameOnCard}
+              onChange={(e) => setNameOnCard(e.target.value)}
+            />
+            {errors.nameOnCard && <p className="error-text">{errors.nameOnCard}</p>}
+          </div>
 
-      <div>
-        <label>Expiry Date</label>
-        <input
-          type="month"
-          value={expiryDate}
-          onChange={(e) => setExpiryDate(e.target.value)}
-        />
-      </div>
+          <div className="form-group">
+            <label className="form-label">Expiry Date</label>
+            <input
+              className="payment-input"
+              type="month"
+              value={expiryDate}
+              onChange={(e) => setExpiryDate(e.target.value)}
+            />
+          </div>
 
-      <div>
-        <label>Security Code</label>
-        <input
-          value={securityCode}
-          onChange={(e) => setSecurityCode(e.target.value)}
-        />
-      </div>
+          <div className="form-group">
+            <label className="form-label">Security Code</label>
+            <input
+              className="payment-input"
+              type="password"
+              maxLength={4}
+              value={securityCode}
+              onChange={(e) => setSecurityCode(e.target.value.replace(/\D/g, ""))}
+            />
+            {errors.securityCode && (
+              <p className="error-text">{errors.securityCode}</p>
+            )}
+          </div>
 
-      <div>
-        <label>Expedited Shipping</label>
-        <input
-          type="checkbox"
-          checked={expeditedShipping}
-          onChange={(e) => setExpeditedShipping(e.target.checked)}
-        />
-      </div>
+          <div className="form-group checkbox-group">
+            <label className="form-label">Expedited Shipping</label>
+            <input
+              type="checkbox"
+              checked={expeditedShipping}
+              onChange={(e) => setExpeditedShipping(e.target.checked)}
+            />
+          </div>
 
-      <button type="submit">Submit Payment</button>
-    </form>
+          <button type="submit" className="payment-submit-btn" disabled={!isFormValid}>
+            Submit Payment
+          </button>
+        </form>
   );
 }
 
