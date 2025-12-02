@@ -9,8 +9,12 @@ const currencyFormatter = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 0,
 });
 
+const normalizeStatus = (status?: string | null) => status?.trim().toUpperCase() ?? '';
+const isEndedStatus = (status?: string | null) => normalizeStatus(status) === 'ENDED';
+const isOngoingStatus = (status?: string | null) => normalizeStatus(status) === 'ONGOING';
+
 const getDisplayStatus = (summary: UserBidSummary) => {
-  if (summary.status === 'ENDED') {
+  if (isEndedStatus(summary.status)) {
     return summary.winning ? 'Won' : 'Closed';
   }
 
@@ -59,7 +63,7 @@ function UserBidsPage() {
   const activeBids = useMemo(
     () =>
       bids
-        .filter((bid) => bid.status === 'ONGOING')
+        .filter((bid) => isOngoingStatus(bid.status))
         .sort((a, b) => new Date(a.endsAt).getTime() - new Date(b.endsAt).getTime()),
     [bids],
   );
@@ -67,7 +71,7 @@ function UserBidsPage() {
   const winningBids = useMemo(
     () =>
       bids
-        .filter((bid) => bid.status === 'ENDED' && bid.winning)
+        .filter((bid) => isEndedStatus(bid.status) && bid.winning)
         .sort((a, b) => new Date(b.endsAt).getTime() - new Date(a.endsAt).getTime()),
     [bids],
   );
@@ -75,7 +79,7 @@ function UserBidsPage() {
   const handleRefresh = () => setRefreshIndex((value) => value + 1);
 
   const renderBidCard = (summary: UserBidSummary) => {
-    const showPaymentLink = summary.status === 'ENDED' && summary.winning;
+    const showPaymentLink = isEndedStatus(summary.status) && summary.winning;
 
     return (
       <article key={summary.auctionId} className="user-bid-card">
