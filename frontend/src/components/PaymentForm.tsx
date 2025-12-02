@@ -10,6 +10,8 @@ function PaymentForm({ onSubmitPayment }: PaymentFormProps) {
   const [expiryDate, setExpiryDate] = useState("");
   const [securityCode, setSecurityCode] = useState("");
   const [expeditedShipping, setExpeditedShipping] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
+
   const [errors, setErrors] = useState({
       cardNumber: "",
       nameOnCard: "",
