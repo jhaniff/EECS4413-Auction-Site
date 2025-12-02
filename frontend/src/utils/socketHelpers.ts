@@ -1,8 +1,8 @@
-import { API_BASE_URL } from '../api/config';
+import { WS_BASE_URL } from '../api/config';
 
-const NORMALIZED_BASE = API_BASE_URL.replace(/\/+$/, '');
+const NORMALIZED_WS_BASE = WS_BASE_URL.replace(/\/+$/, '');
 
-export const WS_ENDPOINT = `${NORMALIZED_BASE}/ws`;
+export const WS_ENDPOINT = `${NORMALIZED_WS_BASE}/ws`;
 
 export interface BidUpdateMessage {
   auctionId: number;
