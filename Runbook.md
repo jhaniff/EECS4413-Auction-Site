@@ -166,6 +166,9 @@ FORGOT_PASSWORD_SECRET=reset-secret
 MAIL_HOST=mailhog
 MAIL_PORT=1025
 FRONTEND_URL=http://localhost:5173
+KEYSTORE_PASSWORD=changeit
+KEYSTORE_LOCATION=classpath:gateway-keystore.p12
+KEYSTORE_TYPE=PKCS12
 ```
 
 - `DB_*` values are shared by Authentication, Auction, Item, and Payment services.  
