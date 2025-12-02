@@ -1,10 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-interface PaymentFormProps {
-  onSubmitPayment: (info: any) => void;
+export interface PaymentFormValues {
+  cardNumber: string;
+  nameOnCard: string;
+  expiryDate: string;
+  securityCode: string;
+  expeditedShipping: boolean;
 }
 
-function PaymentForm({ onSubmitPayment }: PaymentFormProps) {
+interface PaymentFormProps {
+  onSubmitPayment: (info: PaymentFormValues) => void;
+  submitting?: boolean;
+}
+
+type PaymentFormErrors = Pick<PaymentFormValues, "cardNumber" | "nameOnCard" | "securityCode">;
+
+function PaymentForm({ onSubmitPayment, submitting = false }: PaymentFormProps) {
   const [cardNumber, setCardNumber] = useState("");
   const [nameOnCard, setNameOnCard] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
@@ -12,49 +23,53 @@ function PaymentForm({ onSubmitPayment }: PaymentFormProps) {
   const [expeditedShipping, setExpeditedShipping] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
 
-  const [errors, setErrors] = useState({
+  const [errors, setErrors] = useState<PaymentFormErrors>({
+    cardNumber: "",
+    nameOnCard: "",
+    securityCode: "",
+  });
+
+  function validate() {
+    let valid = true;
+    const newErrors: PaymentFormErrors = {
       cardNumber: "",
       nameOnCard: "",
-      securityCode: ""
-      )};
+      securityCode: "",
+    };
 
-    function validate() {
-        let valid = true;
-        const newErrors: any = {};
+    if (!/^\d{16}$/.test(cardNumber)) {
+      newErrors.cardNumber = "Card number must be exactly 16 digits.";
+      valid = false;
+    }
 
-        if (!/^\d{16}$/.test(cardNumber)) {
-          newErrors.cardNumber = "Card number must be exactly 16 digits.";
-          valid = false;
-        }
+    if (nameOnCard.trim().length === 0 || nameOnCard.length > 50) {
+      newErrors.nameOnCard = "Name must be 1–50 characters.";
+      valid = false;
+    }
 
-        if (nameOnCard.trim().length === 0 || nameOnCard.length > 50) {
-          newErrors.nameOnCard = "Name must be 1–50 characters.";
-          valid = false;
-        }
+    if (!/^\d{3,4}$/.test(securityCode)) {
+      newErrors.securityCode = "Security code must be 3–4 digits.";
+      valid = false;
+    }
 
-        if (!/^\d{3,4}$/.test(securityCode)) {
-          newErrors.securityCode = "Security code must be 3–4 digits.";
-          valid = false;
-        }
+    setErrors(newErrors);
+    return valid;
+  }
 
-        setErrors(newErrors);
-        return valid;
-     }
-     useEffect(() => {
-         const formIsValid =
-          /^\d{16}$/.test(cardNumber) &&
-          nameOnCard.trim().length > 0 &&
-          nameOnCard.length <= 50 &&
-          /^\d{3,4}$/.test(securityCode) &&
-          expiryDate !== "";
+  useEffect(() => {
+    const formIsValid =
+      /^\d{16}$/.test(cardNumber) &&
+      nameOnCard.trim().length > 0 &&
+      nameOnCard.length <= 50 &&
+      /^\d{3,4}$/.test(securityCode) &&
+      expiryDate !== "";
 
-          setIsFormValid(formIsValid);
-       },
-       [cardNumber, nameOnCard, securityCode, expiryDate]);
+    setIsFormValid(formIsValid);
+  }, [cardNumber, nameOnCard, securityCode, expiryDate]);
 
   function handleSubmit(e: React.FormEvent) {
-    if (!validate()) return;
     e.preventDefault();
+    if (!validate()) return;
     onSubmitPayment({
       cardNumber,
       nameOnCard,
@@ -121,7 +136,11 @@ function PaymentForm({ onSubmitPayment }: PaymentFormProps) {
             />
           </div>
 
-          <button type="submit" className="payment-submit-btn" disabled={!isFormValid}>
+          <button
+            type="submit"
+            className="payment-submit-btn"
+            disabled={submitting || !isFormValid}
+          >
             Submit Payment
           </button>
         </form>
