@@ -71,6 +71,47 @@
 .payment-section {
   flex: 1;
 }
+.payment-submit-btn {
+  background-color: #2e6edb;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.payment-submit-btn:hover:enabled {
+  background-color: #255ac0;
+}
+
+.payment-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #a4b4d6;
+}
+
+.receipt-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: #fff;
+  padding: 25px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.section-heading {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #2e6edb;
+}
+
+.info-line {
+  margin: 4px 0;
+}
+
 
 .receipt-layout {
   max-width: 900px;
